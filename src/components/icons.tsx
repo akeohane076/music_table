@@ -60,11 +60,16 @@ export function ChevronIcon({size = 16, ...rest}: IconProps) {
   );
 }
 
-/** Sort affordance on Title and Artist. Flips vertically for descending order. */
+/**
+ * Sort affordance on Title and Artist — Material's `arrow_downward_alt`, a thin arrow
+ * whose glyph is ~10×11 inside the 20px frame, matching the design. (The standard
+ * `arrow_downward` fills ~16 of the frame and reads far too heavy next to 16px text.)
+ * Flips vertically for descending order.
+ */
 export function SortArrowIcon({size = 20, ...rest}: IconProps) {
   return (
     <Svg size={size} {...rest}>
-      <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8Z" />
+      <path d="M11.1 5h1.8v9.5l3.6-3.6 1.27 1.27-5.77 5.77-5.77-5.77 1.27-1.27 3.6 3.6z" />
     </Svg>
   );
 }

@@ -68,15 +68,20 @@ const styles = stylex.create({
   },
   columns: {
     display: 'grid',
-    // Two equal 250px columns, split by a rule at the midpoint. The design fixes the
-    // body at 295px regardless of option count, so long lists scroll instead of growing.
+    // Two equal columns split by a rule at the midpoint. The design fixes the body at
+    // 295px regardless of option count. gridTemplateRows pins the row to that height —
+    // a bare `height` leaves the implicit row auto-sized, so the columns grow to fit
+    // their content and the list never clips or scrolls.
     gridTemplateColumns: '1fr 1fr',
-    height: '295px',
+    gridTemplateRows: '295px',
   },
   column: {
     display: 'flex',
     flexDirection: 'column',
     minWidth: 0,
+    // Grid items default to min-height:auto, which refuses to shrink below content.
+    // Without this the column outgrows its 295px row and the list can't scroll.
+    minHeight: 0,
   },
   columnDivided: {
     borderInlineStartWidth: '1px',
@@ -106,6 +111,9 @@ const styles = stylex.create({
   },
   scroll: {
     flex: 1,
+    // Same min-height:0 story as the column: a flex item won't shrink below its
+    // content by default, so overflow-y:auto never engages without this.
+    minHeight: 0,
     overflowY: 'auto',
     paddingBlock: space.md,
     listStyle: 'none',
@@ -344,7 +352,7 @@ export function MultiSelectFilter<T extends string = string>({
                           {...stylex.props(styles.nativeCheckbox)}
                         />
                         <span aria-hidden="true" {...stylex.props(styles.box, isChecked && styles.boxChecked)}>
-                          <CheckIcon size={12} />
+                          <CheckIcon size={14} />
                         </span>
                         <span {...stylex.props(styles.optionText)}>{option.label}</span>
                       </label>
