@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {SingleSelectFilter} from './SingleSelectFilter.tsx';
-import {toOptions} from './types.ts';
+import {toOptions} from '../types.ts';
 
 const GENRES = toOptions(['Hip-Hop', 'Pop', 'Rock']);
 
@@ -26,3 +26,8 @@ export const WithSelection: Story = {args: {value: 'Rock'}};
 
 /** Re-selecting the active option can't clear it — the filter always holds a value. */
 export const Required: Story = {args: {value: 'Pop', isClearable: false}};
+
+/** Uncontrolled: owns its selection via `defaultValue`. */
+export const Uncontrolled: Story = {
+  render: () => <SingleSelectFilter label="Genre" options={GENRES} defaultValue="Rock" />,
+};

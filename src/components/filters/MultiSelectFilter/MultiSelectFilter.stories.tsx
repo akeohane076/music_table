@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {MultiSelectFilter} from './MultiSelectFilter.tsx';
-import {toOptions} from './types.ts';
+import {toOptions} from '../types.ts';
 
 const ARTISTS = toOptions(['ABBA', 'Billie Eilish', 'Jimi Hendrix', 'Kendrick Lamar', 'Led Zeppelin']);
 
@@ -15,8 +15,6 @@ const DECADES = [
 const meta = {
   title: 'Filters/MultiSelectFilter',
   component: MultiSelectFilter,
-  // value/onChange are placeholders satisfying the controlled prop types; the render
-  // wrapper below drives them from local state so the stories are interactive.
   args: {label: 'Artist', options: ARTISTS, searchPlaceholder: 'Search Artists', value: [], onChange: () => {}},
   render: (args) => {
     const [value, setValue] = useState<readonly string[]>(args.value ?? []);
@@ -25,8 +23,7 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component:
-          'Edits a draft committed only on Apply; dismissing discards it. Open the menu to try it.',
+        component: 'Edits a draft committed only on Apply; dismissing discards it. Open the menu to try it.',
       },
     },
   },
@@ -52,4 +49,11 @@ export const Reconfigured: Story = {
     clearLabel: 'Reset',
     formatTriggerLabel: (label, count) => (count ? `${count} decades` : label),
   },
+};
+
+/** Uncontrolled: the filter owns its committed state via `defaultValue`. */
+export const Uncontrolled: Story = {
+  render: () => (
+    <MultiSelectFilter label="Artist" options={ARTISTS} defaultValue={['ABBA']} searchPlaceholder="Search Artists" />
+  ),
 };

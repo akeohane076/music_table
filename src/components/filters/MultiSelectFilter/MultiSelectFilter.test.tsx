@@ -3,7 +3,7 @@ import {describe, expect, it, vi} from 'vitest';
 import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MultiSelectFilter} from './MultiSelectFilter.tsx';
-import {toOptions} from './types.ts';
+import {toOptions} from '../types.ts';
 
 const OPTIONS = toOptions(['ABBA', 'Billie Eilish', 'Jimi Hendrix', 'Kendrick Lamar', 'Led Zeppelin']);
 
@@ -132,5 +132,32 @@ describe('MultiSelectFilter', () => {
 
     expect(within(panel).getByText('Selected (1)')).toBeInTheDocument();
     expect(within(panel).getByRole('checkbox', {name: 'ABBA'})).not.toBeChecked();
+  });
+
+  it('works uncontrolled from defaultValue — owns its committed state', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    // No `value` prop: the component tracks the committed selection itself.
+    render(
+      <MultiSelectFilter
+        label="Artist"
+        options={OPTIONS}
+        defaultValue={['ABBA']}
+        onChange={onChange}
+        searchPlaceholder="Search Artists"
+      />,
+    );
+    const trigger = screen.getByRole('button', {name: /^Artist/});
+    expect(trigger).toHaveTextContent('Artist (1)');
+
+    await user.click(trigger);
+    const panel = await screen.findByRole('dialog');
+    expect(within(panel).getByRole('checkbox', {name: 'ABBA'})).toBeChecked();
+    await user.click(within(panel).getByRole('checkbox', {name: 'Led Zeppelin'}));
+    await user.click(within(panel).getByRole('button', {name: 'Apply'}));
+
+    expect(onChange).toHaveBeenCalledWith(['ABBA', 'Led Zeppelin']);
+    // The trigger updates with no external value wired — proof it's self-controlled.
+    expect(trigger).toHaveTextContent('Artist (2)');
   });
 });

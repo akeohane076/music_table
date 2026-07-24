@@ -1,7 +1,6 @@
 /**
- * The shared option shape for both filters. Keeping `value` distinct from `label`
- * is what lets the same components drive facets whose display text differs from the
- * value stored in state.
+ * The shared option shape for both filters. Keeping `value` distinct from `label` is what
+ * lets the same components drive facets whose display text differs from the stored value.
  */
 export interface FilterOption<T extends string = string> {
   readonly value: T;
