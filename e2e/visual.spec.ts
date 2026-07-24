@@ -25,6 +25,9 @@ test('artist menu — open with selections', async ({page}) => {
   await dialog.getByRole('checkbox', {name: 'Billie Eilish'}).check();
   await dialog.getByRole('checkbox', {name: 'Kendrick Lamar'}).check();
   await expect(dialog.getByText('Selected (2)')).toBeVisible();
+  // Drop focus so the snapshot captures the resting appearance, not the transient
+  // :focus-within ring left on the last-checked row by .check().
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await expect(dialog).toHaveScreenshot('artist-menu.png', {animations: 'disabled'});
 });
 

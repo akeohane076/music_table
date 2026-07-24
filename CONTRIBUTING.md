@@ -9,17 +9,24 @@ A component isn't done when it renders. It's done when every box below is checke
 the checklist a reviewer runs against a PR that adds or changes a component.
 
 **API**
-- [ ] Fully controlled (`value` + `onChange`) unless there's a reason not to; document it.
-- [ ] Props are typed, `readonly`, and generic over the value type where it applies.
+- [ ] Controllable (`value` + `defaultValue` + `onChange` via `useControllableState`) for
+      stateful components; presentational primitives take `value`/`onChange` directly.
+- [ ] Props are typed, `readonly`, and generic over the value/row type where it applies.
 - [ ] User-facing strings are props (i18n-ready), with sensible English defaults.
-- [ ] Exported from the package barrel (`components/filters/index.ts`) with its prop type.
+- [ ] Forwards `ref` and spreads `...rest` to its root element; composite components expose
+      named slot-props (`inputProps`, `prevButtonProps`/`nextButtonProps`, `tableProps`) and a
+      StyleX `xstyle` escape hatch. See "Prop spreading" below.
+- [ ] Lives in its own `components/<Name>/` folder (`<Name>.tsx`, `<Name>.styles.ts`,
+      `<Name>.stories.tsx`, `index.ts`) and is exported from the package barrel with its prop type.
 
 **Styling**
+- [ ] Styles live in the colocated `<Name>.styles.ts` and are referenced through the central
+      registry (`theme/componentStyles.ts` → `styles.<name>.<slot>`), never inline in the `.tsx`.
 - [ ] Every value is a token from `theme/tokens.stylex.ts` — no hard-coded colors, sizes,
       or spacing. New design values are added as tokens, not inlined.
 - [ ] Logical properties (`inset-inline`, `padding-block`) so RTL is free.
-- [ ] Composes shared primitives (`FilterPill`, `FilterPopover`, `menuCard`) rather than
-      re-implementing trigger/surface/motion.
+- [ ] Composes the shared primitives (`Button`, `IconButton`, `Input`, `Icon`, `FilterPopover`)
+      rather than re-implementing trigger/field/icon/surface/motion.
 
 **Accessibility**
 - [ ] Correct ARIA roles; verified with the axe suite (`npm run test:e2e`, a11y specs) —
@@ -37,6 +44,29 @@ the checklist a reviewer runs against a PR that adds or changes a component.
 - [ ] TSDoc on the component and non-obvious props (Storybook autodocs read from it).
 - [ ] A Storybook story per state/variant.
 - [ ] A changeset (`npx changeset`) describing the change and its semver impact.
+
+## Prop spreading
+
+Composability rests on three conventions, applied consistently:
+
+- **Root spread + ref.** A primitive forwards `ref` and spreads `...rest` onto its root
+  element, so callers keep full access to native attributes, ARIA, and event handlers
+  (`<Button {...triggerProps} />` is how Astryx's Popover wires the trigger).
+- **Named slot-props** for a component's internal parts, spread *after* the defaults so they
+  override: `Pagination` takes `prevButtonProps` / `nextButtonProps`, `Input` takes
+  `inputProps`, `Table` takes `tableProps`. Add one per meaningfully-targetable inner element.
+- **`xstyle` escape hatch.** Every primitive accepts a StyleX `xstyle` merged last into
+  `stylex.props(...)`, for one-off overrides that don't warrant a new prop or token (e.g. the
+  table's sortable header neutralising the Button's geometry). Prefer a token; reach for
+  `xstyle` only for genuinely local adjustments.
+
+## Style registry
+
+Component styles are defined in the colocated `<Name>.styles.ts` and rolled up in
+`theme/componentStyles.ts` into a single `styles` object. Components reference their styles
+through it (`styles.button.root`), so the whole system's styling is visible and overridable in
+one place. The `.styles.ts` reads design tokens from `theme/tokens.stylex.ts`; it never
+hard-codes values.
 
 ## Workflow
 

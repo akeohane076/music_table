@@ -43,9 +43,15 @@ piece of internal state — see below.
   formatTriggerLabel /* + Apply/Clear/Selected/empty copy as props */ />
 ```
 
-**Two shared primitives.** `FilterPill` is the one trigger; `FilterPopover` owns the
-Popover↔pill wiring, open/close state, and surface reset. A new filter is built by rendering
-a menu body inside `FilterPopover` — trigger, dismissal, focus, and anchoring come for free.
+**Shared primitives.** The filters compose the library primitives (`Button` — the trigger is
+its `pill` variant, `IconButton`, `Input`/`SearchInput`, `Icon`) rather than hand-rolling
+controls. `FilterPopover` owns the Popover↔trigger wiring, open/close state, and surface
+reset — a new filter is built by rendering a menu body inside it, and trigger, dismissal,
+focus, and anchoring come for free.
+
+> Updated after RFC 0002 (composable primitives): the original design used a bespoke
+> `FilterPill`; it is now the `Button` `pill` variant, and menu styling moved to
+> `FilterPopover` + the style registry.
 
 **Commit models differ on purpose.** Single-select applies immediately on click (a single
 choice has nothing to batch). Multi-select edits a **draft** committed only on **Apply**;

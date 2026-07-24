@@ -35,17 +35,24 @@ Then open http://localhost:5173.
   configurations. Included as evidence for the "reusable and easily configurable"
   requirement: nothing there is a variant or a second implementation, just different props.
 
-## The three required components
+## Architecture
 
-All three live in `src/components/filters/` and share a single `FilterPill` trigger and a
-single `FilterOption` shape, so hit area, focus ring, and active treatment are defined once.
+Each component lives in its own `src/components/<Name>/` folder with a colocated
+`<Name>.styles.ts`; those roll up into a central registry (`theme/componentStyles.ts`) that
+components reference as `styles.<name>.<slot>`. Everything composes from a small set of
+**primitives** — `Button` (the filter trigger is its `pill` variant), `IconButton`, `Input`
+(`SearchInput` is a composition of it), and `Icon` (t-shirt sizes) — plus the shared
+`FilterPopover` shell. The two filters are **controllable** (`value` to control, or
+`defaultValue` to let them own state) via `useControllableState`. `Table<T>` and `Pagination`
+are generic; the songs page passes `Column<Track>[]`. See
+`docs/rfcs/0001` (filter API) and `docs/rfcs/0002` (composable primitives).
 
 ```tsx
 <SearchInput value={q} onChange={setQ} placeholder="Search by title, artist or genre" />
 
 <SingleSelectFilter label="Genre" options={genres} value={genre} onChange={setGenre} />
 
-<MultiSelectFilter label="Artist" options={artistOptions} value={artists} onChange={setArtists} />
+<MultiSelectFilter label="Artist" options={artistOptions} defaultValue={['ABBA']} />
 ```
 
 ### The multi-select is Apply-gated; the single-select is not

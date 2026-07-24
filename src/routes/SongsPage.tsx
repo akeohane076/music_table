@@ -1,12 +1,28 @@
 import * as stylex from '@stylexjs/stylex';
-import {ARTISTS, GENRES, TRACKS} from '../data/tracks.ts';
+import {ARTISTS, GENRES, TRACKS, type Track} from '../data/tracks.ts';
 import {useTrackFilters} from '../hooks/useTrackFilters.ts';
-import {MultiSelectFilter, SearchInput, SingleSelectFilter, toOptions} from '../components/filters';
-import {TrackTable} from '../components/table/TrackTable.tsx';
-import {color, font, size, space, text} from '../theme/tokens.stylex.ts';
+import type {SortColumn} from '../lib/filtering.ts';
+import {
+  MultiSelectFilter,
+  Pagination,
+  SearchInput,
+  SingleSelectFilter,
+  Table,
+  toOptions,
+  type Column,
+} from '../components/index.ts';
+import {color, font, radius, size, space, text} from '../theme/tokens.stylex.ts';
 
 const ARTIST_OPTIONS = toOptions(ARTISTS);
 const GENRE_OPTIONS = toOptions(GENRES);
+
+// How each field is rendered and sorted. Passing this to the generic Table keeps the songs
+// concern (which columns, which are sortable) here, out of the reusable component.
+const TRACK_COLUMNS: Column<Track>[] = [
+  {id: 'title', header: 'Title', cell: (t) => t.title, sortable: true, width: '26.4%'},
+  {id: 'artist', header: 'Artist', cell: (t) => t.artist, sortable: true, width: '28.8%'},
+  {id: 'genre', header: 'Genre', cell: (t) => t.genre},
+];
 
 const styles = stylex.create({
   title: {
@@ -29,6 +45,12 @@ const styles = stylex.create({
   search: {
     width: size.searchWidth,
     maxWidth: '100%',
+  },
+  card: {
+    backgroundColor: color.surface,
+    borderRadius: radius.card,
+    paddingInline: space.lg,
+    paddingBlock: space.lg,
   },
 });
 
@@ -66,14 +88,18 @@ export function SongsPage() {
         />
       </div>
 
-      <TrackTable
-        rows={rows}
-        sort={sort}
-        onSort={toggleSort}
-        page={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-      />
+      <div {...stylex.props(styles.card)}>
+        <Table
+          label="Songs"
+          columns={TRACK_COLUMNS}
+          rows={rows}
+          getRowId={(track) => track.id}
+          sort={{columnId: sort.column, direction: sort.direction}}
+          onSortChange={(columnId) => toggleSort(columnId as SortColumn)}
+          emptyState="No songs match your filters."
+        />
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      </div>
     </>
   );
 }

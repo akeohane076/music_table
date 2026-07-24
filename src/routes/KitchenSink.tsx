@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {ARTISTS, GENRES} from '../data/tracks.ts';
-import {MultiSelectFilter, SearchInput, SingleSelectFilter, toOptions} from '../components/filters';
+import {MultiSelectFilter, SearchInput, SingleSelectFilter, toOptions} from '../components/index.ts';
 import {color, font, radius, space, text} from '../theme/tokens.stylex.ts';
 
 /**
@@ -99,6 +99,12 @@ export function KitchenSink() {
   const [required, setRequired] = useState<string | null>('Pop');
   const [query, setQuery] = useState('');
   const [bare, setBare] = useState('');
+  // For the uncontrolled demo we don't hold the value (the components do); we only echo
+  // what onChange reports, to show the same callback fires in uncontrolled mode.
+  const [echo, setEcho] = useState<{artist: readonly string[]; genre: string | null}>({
+    artist: ['ABBA'],
+    genre: 'Rock',
+  });
 
   return (
     <>
@@ -167,6 +173,27 @@ export function KitchenSink() {
         <div style={{width: 220}}>
           <SearchInput value={bare} onChange={setBare} placeholder="No clear button" isClearable={false} />
         </div>
+      </Case>
+
+      <Case
+        title="Uncontrolled — filters own their state via defaultValue"
+        note="No `value` prop: each component manages its own selection from `defaultValue`. onChange still fires — the echo below is only to prove that."
+        state={echo}
+      >
+        <MultiSelectFilter
+          label="Artist"
+          options={ARTIST_OPTIONS}
+          defaultValue={['ABBA']}
+          onChange={(artist) => setEcho((e) => ({...e, artist}))}
+          searchPlaceholder="Search Artists"
+        />
+        <SingleSelectFilter
+          label="Genre"
+          options={GENRE_OPTIONS}
+          defaultValue="Rock"
+          onChange={(genre) => setEcho((e) => ({...e, genre}))}
+        />
+        <SearchInput defaultValue="uncontrolled" placeholder="Uncontrolled search" width="240px" />
       </Case>
     </>
   );
