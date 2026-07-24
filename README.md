@@ -23,7 +23,9 @@ Then open http://localhost:5173.
 | `npm run dev` | Dev server with HMR |
 | `npm run build` | Typecheck (`tsc -b`) then production build |
 | `npm run preview` | Serve the production build |
-| `npm test` | Run the unit + component tests |
+| `npm test` | Run the unit + component tests (Vitest) |
+| `npm run test:e2e` | Run e2e, accessibility, and visual-regression tests (Playwright) |
+| `npm run storybook` | Component explorer with every state + the a11y addon |
 | `npm run tokens` | Re-extract design tokens from Figma (needs `FIGMA_TOKEN`) |
 
 ## Routes
@@ -111,10 +113,24 @@ The extractor **skips hidden nodes**. The file contains hidden layout scaffoldin
   stylesheet is unnecessary — and it ships only in `dist/`, which that alias makes
   unreachable. The published getting-started guide's CSS import does not apply to the Vite path.
 - Astryx 0.1.8 requires Vite 8 and `@vitejs/plugin-react` 6.
+- **Storybook** uses StyleX runtime injection (`stylexOverrides: {runtimeInjection: true}` in
+  `.storybook/main.ts`). Astryx's default collects StyleX rules into a virtual CSS file served
+  by a dev middleware that can't locate its plugin inside Storybook's builder; runtime
+  injection sidesteps that. The app keeps Astryx's static-CSS path for a lean prod build.
 
-**Testing.** `src/lib/filtering.ts` is pure and unit tested, including the design's own
-example (searching `ab` returns ABBA's tracks by artist, not by title). `MultiSelectFilter`
-has component tests covering the full draft / Apply / discard cycle. One caveat is documented
-in that test file: Astryx's popover cannot be *reopened* under jsdom, so the seeding effect is
-tested with a single open against an externally changed value. Reopening is verified in a real
-browser.
+## Testing
+
+Two layers, by design — fast logic/behavior in jsdom, real-browser truth in Playwright:
+
+- **Vitest** (`npm test`) — `src/lib/filtering.ts` pure logic (incl. the design's `ab` → ABBA
+  example) and `MultiSelectFilter`'s full draft / Apply / discard cycle.
+- **Playwright** (`npm run test:e2e`) — three real-browser suites:
+  - *e2e* — filter flows, including the multi-select **reopen** cycle jsdom can't do.
+  - *accessibility* — axe scans per state (found and fixed a nested-interactive and a
+    contrast issue during development).
+  - *visual regression* — committed screenshot baselines that gate pixel drift.
+- **Storybook** (`npm run storybook`) — every component state, with the a11y addon running
+  axe live in each story.
+
+One caveat, documented at the test: Astryx's popover can't be *reopened* under jsdom, so that
+path is covered in Playwright, not Vitest.
