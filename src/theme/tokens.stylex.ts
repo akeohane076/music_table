@@ -109,6 +109,9 @@ export const size = stylex.defineVars({
   searchWidth: '300px',
   popoverWidth: '500px',
   popoverColumn: '250px',
+  /** Single-select menu width in the design. A minimum, not a cap, so longer
+   * option labels than the genre facet's still grow the menu rather than truncate. */
+  menuMinWidth: '120px',
   checkbox: '16px',
   icon: '20px',
   smallIcon: '16px',

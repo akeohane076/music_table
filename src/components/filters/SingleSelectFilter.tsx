@@ -32,7 +32,11 @@ const styles = stylex.create({
     borderWidth: 0,
   },
   panel: {
-    paddingBlock: space.xs,
+    // 12px top/bottom padding so the first and last options clear the menu edges,
+    // matching the design's 120x144 menu (12 + 3x40 rows + 12). minWidth pins the
+    // design's 120px floor while still growing for longer option labels.
+    paddingBlock: space.md,
+    minWidth: size.menuMinWidth,
     backgroundColor: color.surface,
     borderRadius: radius.control,
     boxShadow: shadow.popover,
