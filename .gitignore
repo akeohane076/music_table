@@ -27,3 +27,9 @@ pnpm-debug.log*
 
 # Figma extraction cache (raw API dumps can be large and may embed file content)
 .figma-cache/
+
+# Playwright — keep committed snapshot baselines (e2e/**-snapshots), ignore run output
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
