@@ -1,0 +1,16 @@
+# Ownership map. A shared library needs a clear reviewer of record for the parts that
+# every consumer depends on. Replace @owner with the real team handle(s).
+
+# Everything, by default.
+*                                   @owner
+
+# The public component surface and shared primitives — the highest-blast-radius code.
+/src/components/filters/            @owner
+
+# Design tokens are the design↔code contract; changes here move every component.
+/src/theme/                         @owner
+
+# Governance and process.
+/CONTRIBUTING.md                    @owner
+/docs/rfcs/                         @owner
+/.changeset/                        @owner
