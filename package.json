@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:visual:update": "playwright test visual --update-snapshots",
     "tokens": "node scripts/extract-figma-tokens.mjs"
   },
   "dependencies": {
@@ -17,19 +20,23 @@
     "@fontsource/roboto": "^5.3.0",
     "@stylexjs/stylex": "^0.19.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1"
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@astryxdesign/build": "^0.1.8",
+    "@axe-core/playwright": "^4.12.1",
+    "@changesets/cli": "^2.31.1",
+    "@playwright/test": "^1.61.1",
     "@stylexjs/unplugin": "^0.19.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/jest-axe": "^3.5.9",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "jest-axe": "^10.0.0",
     "jsdom": "^26.0.0",
     "typescript": "^6.0.3",
     "vite": "^8.1.3",

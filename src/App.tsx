@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex';
-import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {Theme} from '@astryxdesign/core/theme';
 // The prebuilt theme ships its CSS statically; importing from the package root instead
 // makes Astryx inject theme styles at runtime and warns about the cost.
@@ -25,19 +24,22 @@ const styles = stylex.create({
   },
 });
 
+// Two static routes don't warrant a routing library — and react-router carries a long
+// CVE history in the SSR/RSC paths this client-only SPA never touches. A pathname switch
+// is enough; vercel.json rewrites every path to index.html so deep links still resolve.
+function CurrentPage() {
+  const path = window.location.pathname.replace(/\/+$/, '');
+  return path === '/kitchen-sink' ? <KitchenSink /> : <SongsPage />;
+}
+
 export function App() {
   return (
     <Theme theme={neutralTheme}>
-      <BrowserRouter>
-        <div {...stylex.props(styles.page)}>
-          <main {...stylex.props(styles.shell)}>
-            <Routes>
-              <Route path="/" element={<SongsPage />} />
-              <Route path="/kitchen-sink" element={<KitchenSink />} />
-            </Routes>
-          </main>
-        </div>
-      </BrowserRouter>
+      <div {...stylex.props(styles.page)}>
+        <main {...stylex.props(styles.shell)}>
+          <CurrentPage />
+        </main>
+      </div>
     </Theme>
   );
 }
