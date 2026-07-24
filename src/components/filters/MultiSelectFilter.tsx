@@ -1,10 +1,10 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useMemo, useRef, useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {Popover} from '@astryxdesign/core/Popover';
-import {FilterPill} from './FilterPill.tsx';
+import {FilterPopover} from './FilterPopover.tsx';
+import {menuCard} from './menuSurface.ts';
 import {SearchInput} from './SearchInput.tsx';
 import {CheckIcon, CloseIcon} from '../icons.tsx';
-import {color, font, radius, shadow, size, space, text} from '../../theme/tokens.stylex.ts';
+import {color, font, radius, size, space, text} from '../../theme/tokens.stylex.ts';
 import type {FilterOption} from './types.ts';
 
 export interface MultiSelectFilterProps<T extends string = string> {
@@ -23,12 +23,6 @@ export interface MultiSelectFilterProps<T extends string = string> {
   readonly formatTriggerLabel?: (label: string, count: number) => string;
 }
 
-/** Extra credit: the panel settles in from just under its trigger. */
-const panelIn = stylex.keyframes({
-  from: {opacity: 0, transform: 'translateY(-4px) scale(0.98)'},
-  to: {opacity: 1, transform: 'translateY(0) scale(1)'},
-});
-
 /** Selected chips slide in from the column they were checked in. */
 const chipIn = stylex.keyframes({
   from: {opacity: 0, transform: 'translateX(-6px)'},
@@ -36,35 +30,15 @@ const chipIn = stylex.keyframes({
 });
 
 const styles = stylex.create({
-  /**
-   * Astryx's popover ships its own dark themed surface with a 12px radius. The design
-   * calls for a flat white 4px panel, so the dialog is reduced to a positioning shell
-   * and `panel` below supplies the entire visual treatment.
-   */
-  popoverSurface: {
-    width: 'auto',
-    padding: 0,
-    backgroundColor: 'transparent',
-    borderRadius: radius.control,
-    boxShadow: 'none',
-    borderWidth: 0,
-  },
+  // The shared card treatment (surface, radius, shadow, entrance) comes from
+  // menuCard.base; this adds only the multi-select's own layout. `overflow: hidden`
+  // clips the columns to the card radius so the divider and rows never poke past it.
   panel: {
     display: 'flex',
     flexDirection: 'column',
     width: size.popoverWidth,
     maxWidth: 'calc(100vw - 32px)',
-    backgroundColor: color.surface,
-    borderRadius: radius.control,
-    boxShadow: shadow.popover,
     overflow: 'hidden',
-    transformOrigin: 'top center',
-    animationName: panelIn,
-    animationDuration: '140ms',
-    animationTimingFunction: 'cubic-bezier(0.2, 0, 0.2, 1)',
-    '@media (prefers-reduced-motion: reduce)': {
-      animationName: 'none',
-    },
   },
   columns: {
     display: 'grid',
@@ -268,19 +242,9 @@ export function MultiSelectFilter<T extends string = string>({
   emptyMessage = 'No matches',
   formatTriggerLabel = defaultTriggerLabel,
 }: MultiSelectFilterProps<T>) {
-  const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<readonly T[]>(value);
   const [query, setQuery] = useState('');
   const listRef = useRef<HTMLUListElement>(null);
-
-  // Re-seed the draft whenever the popover opens, so a discarded edit never leaks
-  // into the next session and an external change to `value` is picked up.
-  useEffect(() => {
-    if (isOpen) {
-      setDraft(value);
-      setQuery('');
-    }
-  }, [isOpen, value]);
 
   const visibleOptions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -300,11 +264,6 @@ export function MultiSelectFilter<T extends string = string>({
     );
   }
 
-  function apply() {
-    onChange(draft);
-    setIsOpen(false);
-  }
-
   /** Arrow keys walk the option list; the checkboxes themselves stay in the tab order. */
   function onListKeyDown(event: React.KeyboardEvent<HTMLUListElement>) {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
@@ -317,15 +276,21 @@ export function MultiSelectFilter<T extends string = string>({
   }
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      placement="below"
-      alignment="start"
+    <FilterPopover
       label={`${label} filter`}
-      xstyle={styles.popoverSurface}
-      content={
-        <div {...stylex.props(styles.panel)}>
+      triggerLabel={formatTriggerLabel(label, value.length)}
+      isActive={value.length > 0}
+      // Seed the draft from the committed value each time the menu opens, so a
+      // discarded edit never leaks into the next session. Seeding here (on the
+      // open transition) rather than in an effect means an external change to
+      // `value` while the menu is open can't wipe an in-progress edit.
+      onOpen={() => {
+        setDraft(value);
+        setQuery('');
+      }}
+    >
+      {({close}) => (
+        <div {...stylex.props(menuCard.base, styles.panel)}>
           <div {...stylex.props(styles.columns)}>
             <div {...stylex.props(styles.column)}>
               {isSearchable && (
@@ -390,21 +355,19 @@ export function MultiSelectFilter<T extends string = string>({
             <button type="button" onClick={() => setDraft([])} {...stylex.props(styles.button, styles.secondary)}>
               {clearLabel}
             </button>
-            <button type="button" onClick={apply} {...stylex.props(styles.button, styles.primary)}>
+            <button
+              type="button"
+              onClick={() => {
+                onChange(draft);
+                close();
+              }}
+              {...stylex.props(styles.button, styles.primary)}
+            >
               {applyLabel}
             </button>
           </div>
         </div>
-      }
-    >
-      {(triggerProps) => (
-        <FilterPill
-          {...triggerProps}
-          label={formatTriggerLabel(label, value.length)}
-          isOpen={isOpen}
-          isActive={value.length > 0}
-        />
       )}
-    </Popover>
+    </FilterPopover>
   );
 }

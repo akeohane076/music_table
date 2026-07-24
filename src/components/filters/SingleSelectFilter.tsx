@@ -1,8 +1,7 @@
-import {useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {Popover} from '@astryxdesign/core/Popover';
-import {FilterPill} from './FilterPill.tsx';
-import {color, font, radius, shadow, size, space, text} from '../../theme/tokens.stylex.ts';
+import {FilterPopover} from './FilterPopover.tsx';
+import {menuCard} from './menuSurface.ts';
+import {color, font, size, space, text} from '../../theme/tokens.stylex.ts';
 import type {FilterOption} from './types.ts';
 
 export interface SingleSelectFilterProps<T extends string = string> {
@@ -15,38 +14,13 @@ export interface SingleSelectFilterProps<T extends string = string> {
   readonly isClearable?: boolean;
 }
 
-/** Matches the multi-select's entrance so both filters feel like one control. */
-const panelIn = stylex.keyframes({
-  from: {opacity: 0, transform: 'translateY(-4px) scale(0.98)'},
-  to: {opacity: 1, transform: 'translateY(0) scale(1)'},
-});
-
 const styles = stylex.create({
-  /** Reduce Astryx's themed dialog to a positioning shell — see MultiSelectFilter. */
-  popoverSurface: {
-    width: 'auto',
-    padding: 0,
-    backgroundColor: 'transparent',
-    borderRadius: radius.control,
-    boxShadow: 'none',
-    borderWidth: 0,
-  },
   panel: {
     // 12px top/bottom padding so the first and last options clear the menu edges,
     // matching the design's 120x144 menu (12 + 3x40 rows + 12). minWidth pins the
     // design's 120px floor while still growing for longer option labels.
     paddingBlock: space.md,
     minWidth: size.menuMinWidth,
-    backgroundColor: color.surface,
-    borderRadius: radius.control,
-    boxShadow: shadow.popover,
-    transformOrigin: 'top center',
-    animationName: panelIn,
-    animationDuration: '140ms',
-    animationTimingFunction: 'cubic-bezier(0.2, 0, 0.2, 1)',
-    '@media (prefers-reduced-motion: reduce)': {
-      animationName: 'none',
-    },
   },
   list: {
     listStyle: 'none',
@@ -68,8 +42,8 @@ const styles = stylex.create({
     },
     color: color.textPrimary,
     fontFamily: font.family,
-    fontSize: text.optionSize,
-    fontWeight: text.optionWeight,
+    fontSize: text.menuItemSize,
+    fontWeight: text.menuItemWeight,
     textAlign: 'start',
     cursor: 'pointer',
     outlineOffset: '-2px',
@@ -82,8 +56,8 @@ const styles = stylex.create({
 
 /**
  * Required component #2. Unlike the multi-select this commits immediately on click —
- * that difference is in the design (no Apply button here) and is intentional: a
- * single choice has nothing to batch, so an Apply step would just add a click.
+ * that difference is in the design (no Apply button here) and is intentional: a single
+ * choice has nothing to batch, so an Apply step would only add a click.
  */
 export function SingleSelectFilter<T extends string = string>({
   label,
@@ -92,25 +66,16 @@ export function SingleSelectFilter<T extends string = string>({
   onChange,
   isClearable = true,
 }: SingleSelectFilterProps<T>) {
-  const [isOpen, setIsOpen] = useState(false);
   const selected = options.find((option) => option.value === value) ?? null;
 
-  function select(option: FilterOption<T>) {
-    const isSame = option.value === value;
-    onChange(isSame && isClearable ? null : option.value);
-    setIsOpen(false);
-  }
-
   return (
-    <Popover
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
-      placement="below"
-      alignment="start"
+    <FilterPopover
       label={`${label} filter`}
-      xstyle={styles.popoverSurface}
-      content={
-        <div {...stylex.props(styles.panel)}>
+      triggerLabel={selected ? `${label}: ${selected.label}` : label}
+      isActive={selected !== null}
+    >
+      {({close}) => (
+        <div {...stylex.props(menuCard.base, styles.panel)}>
           <ul role="listbox" aria-label={label} {...stylex.props(styles.list)}>
             {options.map((option) => {
               const isSelected = option.value === value;
@@ -118,7 +83,11 @@ export function SingleSelectFilter<T extends string = string>({
                 <li key={option.value} role="option" aria-selected={isSelected}>
                   <button
                     type="button"
-                    onClick={() => select(option)}
+                    onClick={() => {
+                      // Re-selecting the active option clears it, unless required.
+                      onChange(isSelected && isClearable ? null : option.value);
+                      close();
+                    }}
                     {...stylex.props(styles.option, isSelected && styles.selected)}
                   >
                     {option.label}
@@ -128,16 +97,7 @@ export function SingleSelectFilter<T extends string = string>({
             })}
           </ul>
         </div>
-      }
-    >
-      {(triggerProps) => (
-        <FilterPill
-          {...triggerProps}
-          label={selected ? `${label}: ${selected.label}` : label}
-          isOpen={isOpen}
-          isActive={selected !== null}
-        />
       )}
-    </Popover>
+    </FilterPopover>
   );
 }

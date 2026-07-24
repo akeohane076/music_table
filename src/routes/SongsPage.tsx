@@ -1,10 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import {ARTISTS, GENRES, TRACKS} from '../data/tracks.ts';
 import {useTrackFilters} from '../hooks/useTrackFilters.ts';
-import {MultiSelectFilter} from '../components/filters/MultiSelectFilter.tsx';
-import {SearchInput} from '../components/filters/SearchInput.tsx';
-import {SingleSelectFilter} from '../components/filters/SingleSelectFilter.tsx';
-import {toOptions} from '../components/filters/types.ts';
+import {MultiSelectFilter, SearchInput, SingleSelectFilter, toOptions} from '../components/filters';
 import {TrackTable} from '../components/table/TrackTable.tsx';
 import {color, font, size, space, text} from '../theme/tokens.stylex.ts';
 

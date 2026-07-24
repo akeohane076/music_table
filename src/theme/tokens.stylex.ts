@@ -61,10 +61,15 @@ export const text = stylex.defineVars({
   inputLine: '20px',
   inputWeight: '400',
 
-  /** Popover option rows and selected-item rows. */
+  /** Multi-select checkbox options and selected-item rows. */
   optionSize: '16px',
   optionLine: '40px',
   optionWeight: '400',
+
+  /** Single-select menu items — 14px in the design, distinct from the 16px
+   * multi-select options, and matching the table's own row text. */
+  menuItemSize: '14px',
+  menuItemWeight: '400',
 
   selectedHeaderSize: '16px',
   selectedHeaderLine: '36px',
