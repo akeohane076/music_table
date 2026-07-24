@@ -23,6 +23,18 @@ export interface MultiSelectFilterProps<T extends string = string> {
   readonly formatTriggerLabel?: (label: string, count: number) => string;
 }
 
+/** Extra credit: the panel settles in from just under its trigger. */
+const panelIn = stylex.keyframes({
+  from: {opacity: 0, transform: 'translateY(-4px) scale(0.98)'},
+  to: {opacity: 1, transform: 'translateY(0) scale(1)'},
+});
+
+/** Selected chips slide in from the column they were checked in. */
+const chipIn = stylex.keyframes({
+  from: {opacity: 0, transform: 'translateX(-6px)'},
+  to: {opacity: 1, transform: 'translateX(0)'},
+});
+
 const styles = stylex.create({
   /**
    * Astryx's popover ships its own dark themed surface with a 12px radius. The design
@@ -46,6 +58,13 @@ const styles = stylex.create({
     borderRadius: radius.control,
     boxShadow: shadow.popover,
     overflow: 'hidden',
+    transformOrigin: 'top center',
+    animationName: panelIn,
+    animationDuration: '140ms',
+    animationTimingFunction: 'cubic-bezier(0.2, 0, 0.2, 1)',
+    '@media (prefers-reduced-motion: reduce)': {
+      animationName: 'none',
+    },
   },
   columns: {
     display: 'grid',
@@ -151,6 +170,12 @@ const styles = stylex.create({
     gap: space.md,
     height: size.rowHeight,
     paddingInline: space.md,
+    animationName: chipIn,
+    animationDuration: '120ms',
+    animationTimingFunction: 'ease-out',
+    '@media (prefers-reduced-motion: reduce)': {
+      animationName: 'none',
+    },
   },
   removeButton: {
     display: 'flex',

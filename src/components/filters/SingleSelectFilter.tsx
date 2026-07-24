@@ -15,6 +15,12 @@ export interface SingleSelectFilterProps<T extends string = string> {
   readonly isClearable?: boolean;
 }
 
+/** Matches the multi-select's entrance so both filters feel like one control. */
+const panelIn = stylex.keyframes({
+  from: {opacity: 0, transform: 'translateY(-4px) scale(0.98)'},
+  to: {opacity: 1, transform: 'translateY(0) scale(1)'},
+});
+
 const styles = stylex.create({
   /** Reduce Astryx's themed dialog to a positioning shell — see MultiSelectFilter. */
   popoverSurface: {
@@ -30,6 +36,13 @@ const styles = stylex.create({
     backgroundColor: color.surface,
     borderRadius: radius.control,
     boxShadow: shadow.popover,
+    transformOrigin: 'top center',
+    animationName: panelIn,
+    animationDuration: '140ms',
+    animationTimingFunction: 'cubic-bezier(0.2, 0, 0.2, 1)',
+    '@media (prefers-reduced-motion: reduce)': {
+      animationName: 'none',
+    },
   },
   list: {
     listStyle: 'none',

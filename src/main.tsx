@@ -1,11 +1,13 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 
-// Roboto is the design's only typeface. Self-hosted rather than loaded from a CDN so the
-// page has no third-party request and no flash of fallback text.
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/600.css';
+// Roboto is the design's only typeface, at exactly these three weights. Self-hosted
+// rather than loaded from a CDN so the page makes no third-party request, and scoped to
+// the latin subset — the unscoped entrypoints also ship Cyrillic, Greek, math and
+// Vietnamese, none of which this content uses.
+import '@fontsource/roboto/latin-400.css';
+import '@fontsource/roboto/latin-500.css';
+import '@fontsource/roboto/latin-600.css';
 
 // No `astryx.css` import: the build plugin aliases @astryxdesign/core to its source and
 // StyleX compiles component styles from there, so the prebuilt stylesheet would be dead weight

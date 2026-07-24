@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {Theme} from '@astryxdesign/core/theme';
-import {neutralTheme} from '@astryxdesign/theme-neutral';
+// The prebuilt theme ships its CSS statically; importing from the package root instead
+// makes Astryx inject theme styles at runtime and warns about the cost.
+import {neutralTheme} from '@astryxdesign/theme-neutral/built';
 
 import {SongsPage} from './routes/SongsPage.tsx';
 import {KitchenSink} from './routes/KitchenSink.tsx';
