@@ -1,0 +1,11 @@
+/**
+ * StyleX extraction placeholder — the build plugin replaces this at-rule with the
+ * compiled stylesheet. Everything else lives in tokens.stylex.ts and colocated styles.
+ */
+@stylex;
+
+html,
+body,
+#root {
+  height: 100%;
+}
