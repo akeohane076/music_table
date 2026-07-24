@@ -76,13 +76,21 @@ export function SingleSelectFilter<T extends string = string>({
     >
       {({close}) => (
         <div {...stylex.props(menuCard.base, styles.panel)}>
-          <ul role="listbox" aria-label={label} {...stylex.props(styles.list)}>
+          {/*
+            A menu of radio items, not a listbox: each option applies immediately on
+            click and the choices are mutually exclusive, which `menuitemradio` models
+            exactly. It also keeps the option interactive without nesting a button inside
+            an interactive `role="option"` (invalid ARIA / an axe `nested-interactive`).
+          */}
+          <ul role="menu" aria-label={label} {...stylex.props(styles.list)}>
             {options.map((option) => {
               const isSelected = option.value === value;
               return (
-                <li key={option.value} role="option" aria-selected={isSelected}>
+                <li key={option.value} role="none">
                   <button
                     type="button"
+                    role="menuitemradio"
+                    aria-checked={isSelected}
                     onClick={() => {
                       // Re-selecting the active option clears it, unless required.
                       onChange(isSelected && isClearable ? null : option.value);

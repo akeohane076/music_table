@@ -37,7 +37,9 @@ const styles = stylex.create({
     marginBlock: space.sm,
     fontFamily: font.family,
     fontSize: text.inputSize,
-    color: color.textMuted,
+    // textPrimary, not textMuted: this sits on the gray page background, where the
+    // muted token's 4.22:1 fails AA. The muted token is only AA-safe on white surfaces.
+    color: color.textPrimary,
     maxWidth: '60ch',
   },
   case: {
