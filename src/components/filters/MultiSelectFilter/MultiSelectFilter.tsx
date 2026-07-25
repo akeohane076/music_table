@@ -1,8 +1,8 @@
 import {useMemo, useRef, useState, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {Popover} from '../../Popover/index.ts';
+import {Popover, type PopoverProps} from '../../Popover/index.ts';
 import {FilterTrigger} from '../FilterTrigger/index.ts';
-import {SearchInput} from '../../SearchInput/index.ts';
+import {SearchInput, type SearchInputProps} from '../../SearchInput/index.ts';
 import {Button} from '../../Button/index.ts';
 import {Checkbox} from '../../Checkbox/index.ts';
 import {RemovableTag} from '../../RemovableTag/index.ts';
@@ -34,6 +34,23 @@ export interface MultiSelectFilterProps<T extends string = string> {
   readonly formatTriggerLabel?: (label: string, count: number) => string;
   /** Pass a trigger to render; omit for the default pill. Receives `{count, isActive}`. */
   readonly children?: (state: MultiSelectTriggerState) => ReactNode;
+
+  // Configurability — every default stays exactly as the design specifies.
+  /** Where the menu opens relative to the trigger. */
+  readonly placement?: PopoverProps['placement'];
+  readonly alignment?: PopoverProps['alignment'];
+  /** StyleX overrides for the menu panel. */
+  readonly menuXstyle?: stylex.StyleXStyles;
+  /** Forwarded to the in-menu search — placeholder, slots, etc. Its value/onChange stay
+   * owned by the filter (the guardrail), so the search always drives option filtering. */
+  readonly searchProps?: Omit<SearchInputProps, 'value' | 'defaultValue' | 'onChange'>;
+  /** How the in-menu search matches options. Default: case-insensitive label substring. */
+  readonly filterOption?: (option: FilterOption<T>, query: string) => boolean;
+  /** Custom option-row content (e.g. a swatch or count). The row's checkbox machinery —
+   * toggling, roles, keyboard — is unchanged; only the label content is yours. */
+  readonly renderOptionLabel?: (option: FilterOption<T>, state: {checked: boolean}) => ReactNode;
+  /** Custom content for a selected item in the right-hand column. */
+  readonly renderSelectedLabel?: (option: FilterOption<T>) => ReactNode;
 }
 
 function defaultTriggerLabel(label: string, count: number) {
@@ -62,6 +79,13 @@ export function MultiSelectFilter<T extends string = string>({
   emptyMessage = 'No matches',
   formatTriggerLabel = defaultTriggerLabel,
   children,
+  placement,
+  alignment,
+  menuXstyle,
+  searchProps,
+  filterOption = (option, q) => option.label.toLowerCase().includes(q),
+  renderOptionLabel,
+  renderSelectedLabel,
 }: MultiSelectFilterProps<T>) {
   const [committed, setCommitted] = useControllableState<readonly T[]>({value, defaultValue, onChange});
   const [draft, setDraft] = useState<readonly T[]>(committed);
@@ -70,8 +94,8 @@ export function MultiSelectFilter<T extends string = string>({
 
   const visibleOptions = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q ? options.filter((option) => option.label.toLowerCase().includes(q)) : options;
-  }, [options, query]);
+    return q ? options.filter((option) => filterOption(option, q)) : options;
+  }, [options, query, filterOption]);
 
   const selectedOptions = useMemo(
     () => options.filter((option) => draft.includes(option.value)),
@@ -103,6 +127,8 @@ export function MultiSelectFilter<T extends string = string>({
   return (
     <Popover
       label={`${label} filter`}
+      placement={placement}
+      alignment={alignment}
       // Seed the draft from the committed value each time the menu opens, so a discarded
       // edit never leaks into the next session, and an external change to `value` while the
       // menu is open can't wipe an in-progress edit.
@@ -120,16 +146,18 @@ export function MultiSelectFilter<T extends string = string>({
       </Popover.Trigger>
       <Popover.Content>
         {({close}) => (
-          <div {...stylex.props(styles.popover.card, styles.multiSelect.panel)}>
+          <div {...stylex.props(styles.popover.card, styles.multiSelect.panel, menuXstyle)}>
             <div {...stylex.props(styles.multiSelect.columns)}>
               <div {...stylex.props(styles.multiSelect.column)}>
                 {isSearchable && (
                   <div {...stylex.props(styles.multiSelect.header, styles.multiSelect.headerSearch)}>
                     <SearchInput
-                      value={query}
-                      onChange={setQuery}
                       placeholder={searchPlaceholder}
                       variant="plain"
+                      {...searchProps}
+                      // Guardrail after the slot spread: the search always drives filtering.
+                      value={query}
+                      onChange={setQuery}
                     />
                   </div>
                 )}
@@ -137,16 +165,16 @@ export function MultiSelectFilter<T extends string = string>({
                   {visibleOptions.length === 0 && (
                     <li {...stylex.props(styles.multiSelect.empty)}>{emptyMessage}</li>
                   )}
-                  {visibleOptions.map((option) => (
-                    <li key={option.value}>
-                      <Checkbox
-                        checked={draft.includes(option.value)}
-                        onChange={() => toggle(option.value)}
-                      >
-                        {option.label}
-                      </Checkbox>
-                    </li>
-                  ))}
+                  {visibleOptions.map((option) => {
+                    const checked = draft.includes(option.value);
+                    return (
+                      <li key={option.value}>
+                        <Checkbox checked={checked} onChange={() => toggle(option.value)}>
+                          {renderOptionLabel ? renderOptionLabel(option, {checked}) : option.label}
+                        </Checkbox>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -160,7 +188,7 @@ export function MultiSelectFilter<T extends string = string>({
                   {selectedOptions.map((option) => (
                     <li key={option.value}>
                       <RemovableTag onRemove={() => toggle(option.value)} removeLabel={`Remove ${option.label}`}>
-                        {option.label}
+                        {renderSelectedLabel ? renderSelectedLabel(option) : option.label}
                       </RemovableTag>
                     </li>
                   ))}

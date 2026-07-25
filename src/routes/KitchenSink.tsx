@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {ARTISTS, GENRES} from '../data/tracks.ts';
+import {ARTISTS, GENRES, TRACKS} from '../data/tracks.ts';
 import {
   Button,
   MultiSelectFilter,
@@ -19,6 +19,11 @@ import {color, font, radius, space, text} from '../theme/tokens.stylex.ts';
 
 const ARTIST_OPTIONS = toOptions(ARTISTS);
 const GENRE_OPTIONS = toOptions(GENRES);
+
+const TRACK_COUNTS = new Map<string, number>();
+for (const track of TRACKS) {
+  TRACK_COUNTS.set(track.artist, (TRACK_COUNTS.get(track.artist) ?? 0) + 1);
+}
 
 /** Deliberately unlike the song facets: different value/label shapes and a long list. */
 const DECADE_OPTIONS = [
@@ -112,6 +117,7 @@ export function KitchenSink() {
     genre: 'Rock',
   });
   const [customArtists, setCustomArtists] = useState<readonly string[]>([]);
+  const [richArtists, setRichArtists] = useState<readonly string[]>(['Led Zeppelin']);
 
   return (
     <>
@@ -200,6 +206,29 @@ export function KitchenSink() {
             </Button>
           )}
         </MultiSelectFilter>
+      </Case>
+
+      <Case
+        title="MultiSelectFilter — custom option rendering + custom matching"
+        note="renderOptionLabel adds a live track count to each row (the checkbox machinery is untouched); filterOption swaps the match logic to prefix-only. Same component."
+        state={richArtists}
+      >
+        <MultiSelectFilter
+          label="Artist"
+          options={ARTIST_OPTIONS}
+          value={richArtists}
+          onChange={setRichArtists}
+          searchProps={{placeholder: 'Type a first letter…'}}
+          filterOption={(option, q) => option.label.toLowerCase().startsWith(q)}
+          renderOptionLabel={(option, {checked}) => (
+            <>
+              {option.label}
+              <span style={{color: checked ? '#006088' : '#757575', marginInlineStart: 6, fontSize: 12}}>
+                · {TRACK_COUNTS.get(option.value) ?? 0} tracks
+              </span>
+            </>
+          )}
+        />
       </Case>
 
       <Case

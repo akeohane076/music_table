@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
-import {Popover} from '../../Popover/index.ts';
+import {Popover, type PopoverProps} from '../../Popover/index.ts';
 import {FilterTrigger} from '../FilterTrigger/index.ts';
 import {styles} from '../../../theme/componentStyles.ts';
 import {useControllableState} from '../../../hooks/useControllableState.ts';
@@ -25,6 +25,15 @@ export interface SingleSelectFilterProps<T extends string = string> {
   readonly isClearable?: boolean;
   /** Pass a trigger to render; omit for the default pill. Receives the current state. */
   readonly children?: (state: SingleSelectTriggerState) => ReactNode;
+
+  // Configurability — every default stays exactly as the design specifies.
+  /** Where the menu opens relative to the trigger. */
+  readonly placement?: PopoverProps['placement'];
+  readonly alignment?: PopoverProps['alignment'];
+  /** StyleX overrides for the menu panel. */
+  readonly menuXstyle?: stylex.StyleXStyles;
+  /** Custom option content; the menuitemradio machinery is unchanged. */
+  readonly renderOptionLabel?: (option: FilterOption<T>, state: {selected: boolean}) => ReactNode;
 }
 
 /**
@@ -40,6 +49,10 @@ export function SingleSelectFilter<T extends string = string>({
   onChange,
   isClearable = true,
   children,
+  placement,
+  alignment,
+  menuXstyle,
+  renderOptionLabel,
 }: SingleSelectFilterProps<T>) {
   const [selectedValue, setSelectedValue] = useControllableState<T | null>({value, defaultValue, onChange});
   const selected = options.find((option) => option.value === selectedValue) ?? null;
@@ -47,7 +60,7 @@ export function SingleSelectFilter<T extends string = string>({
   const triggerLabel = selected ? `${label}: ${selected.label}` : label;
 
   return (
-    <Popover label={`${label} filter`}>
+    <Popover label={`${label} filter`} placement={placement} alignment={alignment}>
       <Popover.Trigger>
         {children ? (
           children({value: selectedValue, label: selected?.label ?? null, isActive})
@@ -57,7 +70,7 @@ export function SingleSelectFilter<T extends string = string>({
       </Popover.Trigger>
       <Popover.Content>
         {({close}) => (
-          <div {...stylex.props(styles.popover.card, styles.singleSelect.panel)}>
+          <div {...stylex.props(styles.popover.card, styles.singleSelect.panel, menuXstyle)}>
             {/*
               A menu of radio items, not a listbox: each option applies immediately on click
               and the choices are mutually exclusive, which `menuitemradio` models exactly.
@@ -77,7 +90,7 @@ export function SingleSelectFilter<T extends string = string>({
                       }}
                       {...stylex.props(styles.singleSelect.option, isSelected && styles.singleSelect.selected)}
                     >
-                      {option.label}
+                      {renderOptionLabel ? renderOptionLabel(option, {selected: isSelected}) : option.label}
                     </button>
                   </li>
                 );

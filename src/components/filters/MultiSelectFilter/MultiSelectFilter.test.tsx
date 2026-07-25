@@ -134,6 +134,68 @@ describe('MultiSelectFilter', () => {
     expect(within(panel).getByRole('checkbox', {name: 'ABBA'})).not.toBeChecked();
   });
 
+  it('renders custom option content while the checkbox machinery keeps working', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelectFilter
+        label="Artist"
+        options={OPTIONS}
+        defaultValue={[]}
+        renderOptionLabel={(option, {checked}) => (
+          <span data-testid={`opt-${option.value}`}>
+            {option.label} {checked ? '✓' : ''}
+          </span>
+        )}
+      />,
+    );
+    const panel = await openPanel(user);
+
+    // Custom content renders, and the row is still a real, toggleable checkbox.
+    expect(within(panel).getByTestId('opt-ABBA')).toHaveTextContent('ABBA');
+    await user.click(within(panel).getByRole('checkbox', {name: /ABBA/}));
+    expect(within(panel).getByRole('checkbox', {name: /ABBA/})).toBeChecked();
+    expect(within(panel).getByTestId('opt-ABBA')).toHaveTextContent('✓');
+  });
+
+  it('uses a custom filterOption predicate for the in-menu search', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelectFilter
+        label="Artist"
+        options={OPTIONS}
+        defaultValue={[]}
+        searchPlaceholder="Search Artists"
+        // Prefix-only matching: "led" matches Led Zeppelin but "eppelin" must not.
+        filterOption={(option, q) => option.label.toLowerCase().startsWith(q)}
+      />,
+    );
+    const panel = await openPanel(user);
+    await user.type(within(panel).getByPlaceholderText('Search Artists'), 'eppelin');
+
+    expect(within(panel).queryByRole('checkbox', {name: 'Led Zeppelin'})).not.toBeInTheDocument();
+    expect(within(panel).getByText('No matches')).toBeInTheDocument();
+  });
+
+  it('guards the in-menu search: searchProps cannot detach it from filtering', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelectFilter
+        label="Artist"
+        options={OPTIONS}
+        defaultValue={[]}
+        // Consumer customises the placeholder but tries to hijack the value.
+        searchProps={{placeholder: 'Find…', value: 'zzz', onChange: () => {}} as never}
+      />,
+    );
+    const panel = await openPanel(user);
+    const search = within(panel).getByPlaceholderText('Find…');
+
+    // The filter's own value/onChange won: typing still narrows the list.
+    await user.type(search, 'led');
+    expect(within(panel).getByRole('checkbox', {name: 'Led Zeppelin'})).toBeInTheDocument();
+    expect(within(panel).queryByRole('checkbox', {name: 'ABBA'})).not.toBeInTheDocument();
+  });
+
   it('works uncontrolled from defaultValue — owns its committed state', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
