@@ -11,6 +11,9 @@ import {icon} from '../components/Icon/Icon.styles.ts';
 import {button} from '../components/Button/Button.styles.ts';
 import {iconButton} from '../components/IconButton/IconButton.styles.ts';
 import {input} from '../components/Input/Input.styles.ts';
+import {checkbox} from '../components/Checkbox/Checkbox.styles.ts';
+import {removableTag} from '../components/RemovableTag/RemovableTag.styles.ts';
+import {buttonBar} from '../components/ButtonBar/ButtonBar.styles.ts';
 import {popover} from '../components/Popover/Popover.styles.ts';
 import {table} from '../components/Table/Table.styles.ts';
 import {pagination} from '../components/Pagination/Pagination.styles.ts';
@@ -22,6 +25,9 @@ export const styles = {
   button,
   iconButton,
   input,
+  checkbox,
+  removableTag,
+  buttonBar,
   popover,
   table,
   pagination,

@@ -4,4 +4,5 @@
  */
 export {SingleSelectFilter, type SingleSelectFilterProps} from './SingleSelectFilter/index.ts';
 export {MultiSelectFilter, type MultiSelectFilterProps} from './MultiSelectFilter/index.ts';
+export {FilterTrigger, type FilterTriggerProps} from './FilterTrigger/index.ts';
 export {toOptions, type FilterOption} from './types.ts';

@@ -1,7 +1,13 @@
 import {useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {ARTISTS, GENRES} from '../data/tracks.ts';
-import {MultiSelectFilter, SearchInput, SingleSelectFilter, toOptions} from '../components/index.ts';
+import {
+  Button,
+  MultiSelectFilter,
+  SearchInput,
+  SingleSelectFilter,
+  toOptions,
+} from '../components/index.ts';
 import {color, font, radius, space, text} from '../theme/tokens.stylex.ts';
 
 /**
@@ -105,6 +111,7 @@ export function KitchenSink() {
     artist: ['ABBA'],
     genre: 'Rock',
   });
+  const [customArtists, setCustomArtists] = useState<readonly string[]>([]);
 
   return (
     <>
@@ -173,6 +180,26 @@ export function KitchenSink() {
         <div style={{width: 220}}>
           <SearchInput value={bare} onChange={setBare} placeholder="No clear button" isClearable={false} />
         </div>
+      </Case>
+
+      <Case
+        title="MultiSelectFilter — custom trigger passed as a child"
+        note="The trigger is composed, not configured: this passes a plain outline Button (with live count) instead of the default pill. Same menu, same draft/Apply behaviour."
+        state={customArtists}
+      >
+        <MultiSelectFilter
+          label="Artist"
+          options={ARTIST_OPTIONS}
+          value={customArtists}
+          onChange={setCustomArtists}
+          searchPlaceholder="Search Artists"
+        >
+          {({count}) => (
+            <Button variant="outline" size="sm">
+              Artists{count ? ` · ${count}` : ''}
+            </Button>
+          )}
+        </MultiSelectFilter>
       </Case>
 
       <Case

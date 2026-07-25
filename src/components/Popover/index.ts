@@ -1,5 +1,8 @@
 export {
-  FilterPopover,
-  type FilterPopoverProps,
-  type FilterMenuRenderProps,
-} from './FilterPopover.tsx';
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  usePopover,
+  type PopoverProps,
+  type PopoverContextValue,
+} from './Popover.tsx';

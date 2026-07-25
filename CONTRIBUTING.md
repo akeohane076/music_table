@@ -74,6 +74,23 @@ Every component covers its parts: `Button` (root + `labelProps`), `IconButton` (
   for one-off overrides that don't warrant a new token (e.g. the table header neutralising the
   Button's geometry). Prefer a token; reach for `xstyle` only for genuinely local adjustments.
 
+## Compound components
+
+Where a component has a trigger and a surface (or otherwise benefits from being assembled),
+prefer **composition by children over configuration by props**. `Popover` is the model:
+`<Popover><Popover.Trigger>{trigger}</Popover.Trigger><Popover.Content>{({close}) => …}</Popover.Content></Popover>`,
+sharing state via context (`usePopover()`). Build such components as:
+
+- a parent that owns state and provides context;
+- named sub-parts (`Popover.Trigger`, `Popover.Content`) as the children;
+- a render-prop where a child needs state (content gets `{close}`; the filters' trigger gets
+  `{count, isActive}`).
+
+Ship **both levels**: the composable parts *and* a convenience component that assembles them for
+the common case (the filters accept a trigger child but default to `FilterTrigger`). Reusable
+menu pieces — `Checkbox`, `RemovableTag`, `ButtonBar` — are their own primitives so a consumer
+can assemble a different menu from them.
+
 ## Style registry
 
 Component styles are defined in the colocated `<Name>.styles.ts` and rolled up in
