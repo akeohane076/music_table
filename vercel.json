@@ -1,4 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [{"source": "/(.*)", "destination": "/index.html"}]
+  "buildCommand": "npm run build && npx storybook build -o dist/storybook",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {"source": "/storybook", "destination": "/storybook/index.html"},
+    {"source": "/(.*)", "destination": "/index.html"}
+  ]
 }

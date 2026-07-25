@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import {useRef, type ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {Popover, type PopoverProps} from '../../Popover/index.ts';
 import {FilterTrigger} from '../FilterTrigger/index.ts';
@@ -58,6 +58,21 @@ export function SingleSelectFilter<T extends string = string>({
   const selected = options.find((option) => option.value === selectedValue) ?? null;
   const isActive = selected !== null;
   const triggerLabel = selected ? `${label}: ${selected.label}` : label;
+  const menuRef = useRef<HTMLUListElement>(null);
+
+  /** Arrow keys walk the menu items, wrapping at the ends — the WAI-ARIA menu pattern,
+   * and the same interaction the multi-select's option list has. */
+  function onMenuKeyDown(event: React.KeyboardEvent<HTMLUListElement>) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]') ?? [],
+    );
+    const index = items.indexOf(document.activeElement as HTMLButtonElement);
+    if (index === -1) return;
+    event.preventDefault();
+    const next = event.key === 'ArrowDown' ? index + 1 : index - 1;
+    items[(next + items.length) % items.length]?.focus();
+  }
 
   return (
     <Popover label={`${label} filter`} placement={placement} alignment={alignment}>
@@ -75,7 +90,13 @@ export function SingleSelectFilter<T extends string = string>({
               A menu of radio items, not a listbox: each option applies immediately on click
               and the choices are mutually exclusive, which `menuitemradio` models exactly.
             */}
-            <ul role="menu" aria-label={label} {...stylex.props(styles.singleSelect.list)}>
+            <ul
+              ref={menuRef}
+              role="menu"
+              aria-label={label}
+              onKeyDown={onMenuKeyDown}
+              {...stylex.props(styles.singleSelect.list)}
+            >
               {options.map((option) => {
                 const isSelected = option.value === selectedValue;
                 return (
