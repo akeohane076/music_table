@@ -1,11 +1,12 @@
 import type {ComponentPropsWithoutRef, ReactNode, Ref} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {styles} from '../../theme/componentStyles.ts';
+import {mergeSlot, type DataAttributes, type Slot} from '../../lib/slotProps.ts';
 
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'pill';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends Omit<ComponentPropsWithoutRef<'button'>, 'ref'> {
+export interface ButtonProps extends Omit<ComponentPropsWithoutRef<'button'>, 'ref'>, DataAttributes {
   readonly variant?: ButtonVariant;
   readonly size?: ButtonSize;
   /** Rendered before the label. */
@@ -16,14 +17,19 @@ export interface ButtonProps extends Omit<ComponentPropsWithoutRef<'button'>, 'r
   readonly isActive?: boolean;
   /** StyleX escape hatch for one-off overrides without breaking the token contract. */
   readonly xstyle?: stylex.StyleXStyles;
+  /** Spread onto the `<span>` wrapping the label. */
+  readonly labelProps?: Slot<'span'>;
   readonly ref?: Ref<HTMLButtonElement>;
 }
 
 /**
  * The button primitive every actionable control composes from. The `pill` variant is the
  * filter trigger; `solid`/`outline` are the menu's Apply/Clear; `ghost` backs the sortable
- * table headers. `...rest` spreads onto the native `<button>`, so callers keep full access
- * to `type`, `disabled`, ARIA, refs, and the anchor callbacks Astryx's Popover injects.
+ * table headers.
+ *
+ * Root props (`...rest`) spread onto the native `<button>` under the guardrail merge, so
+ * callers keep `type`, `disabled`, ARIA, and the anchor callbacks Astryx's Popover injects,
+ * while the compiled StyleX classes are always applied. `labelProps` targets the label span.
  */
 export function Button({
   variant = 'solid',
@@ -32,6 +38,7 @@ export function Button({
   endIcon,
   isActive = false,
   xstyle,
+  labelProps,
   type = 'button',
   children,
   ref,
@@ -40,18 +47,19 @@ export function Button({
   return (
     <button
       ref={ref}
-      type={type}
-      {...rest}
-      {...stylex.props(
-        styles.button.base,
-        styles.button[size],
-        styles.button[variant],
-        isActive && styles.button.active,
-        xstyle,
-      )}
+      {...mergeSlot(rest, {
+        type,
+        ...stylex.props(
+          styles.button.base,
+          styles.button[size],
+          styles.button[variant],
+          isActive && styles.button.active,
+          xstyle,
+        ),
+      })}
     >
       {startIcon}
-      {children}
+      <span {...(labelProps ?? {})}>{children}</span>
       {endIcon}
     </button>
   );

@@ -1,7 +1,8 @@
-import {useId, type ComponentPropsWithoutRef, type ReactNode, type Ref} from 'react';
+import {useId, type ReactNode, type Ref} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {styles} from '../../theme/componentStyles.ts';
 import {useControllableState} from '../../hooks/useControllableState.ts';
+import {mergeSlot, type Slot} from '../../lib/slotProps.ts';
 
 export type InputVariant = 'boxed' | 'plain';
 
@@ -11,7 +12,7 @@ export interface InputProps {
   readonly defaultValue?: string;
   readonly onChange?: (value: string) => void;
   readonly placeholder?: string;
-  /** Visually hidden label; falls back to `inputProps['aria-label']` if omitted. */
+  /** Visually hidden label — falls back to `inputProps['aria-label']` if omitted. */
   readonly label?: string;
   /** Decorative glyph before the text (clicks fall through). */
   readonly startIcon?: ReactNode;
@@ -22,14 +23,20 @@ export interface InputProps {
   readonly type?: string;
   readonly width?: string;
   readonly xstyle?: stylex.StyleXStyles;
-  /** Spread onto the inner `<input>` — extra ARIA, autoComplete, name, etc. */
-  readonly inputProps?: Omit<ComponentPropsWithoutRef<'input'>, 'value' | 'defaultValue' | 'onChange'>;
+  // Slot props — each spreads onto its element under the guardrail merge.
+  readonly rootProps?: Slot<'div'>;
+  readonly labelProps?: Slot<'label'>;
+  readonly inputProps?: Omit<Slot<'input'>, 'value' | 'defaultValue' | 'onChange'>;
+  readonly startIconProps?: Slot<'span'>;
+  readonly endIconProps?: Slot<'span'>;
   readonly ref?: Ref<HTMLInputElement>;
 }
 
 /**
  * Text-field primitive. Owns the boxed/plain surface, the focus ring, adornment slots, and
  * the controlled-or-uncontrolled value contract; `SearchInput` is a thin composition of it.
+ * Every internal element (root, label, input, adornments) exposes a `*Props` slot merged
+ * under the guardrail policy — the controlled value, id, and StyleX classes always win.
  */
 export function Input({
   value,
@@ -43,34 +50,55 @@ export function Input({
   type = 'text',
   width,
   xstyle,
+  rootProps,
+  labelProps,
   inputProps,
+  startIconProps,
+  endIconProps,
   ref,
 }: InputProps) {
   const id = useId();
   const [state, setState] = useControllableState({value, defaultValue, onChange});
 
+  const rootSx = stylex.props(styles.input.field, variant === 'plain' && styles.input.plain, xstyle);
+  const inputSx = stylex.props(
+    styles.input.control,
+    !!startIcon && styles.input.padStart,
+    !!endIcon && styles.input.padEnd,
+  );
+
   return (
     <div
-      {...stylex.props(styles.input.field, variant === 'plain' && styles.input.plain, xstyle)}
-      style={width ? {width} : undefined}
+      {...mergeSlot(rootProps, {
+        className: rootSx.className,
+        style: {...rootSx.style, ...(width ? {width} : {})},
+      })}
     >
       {label && (
-        <label htmlFor={id} {...stylex.props(styles.input.srOnly)}>
+        <label {...mergeSlot(labelProps, {htmlFor: id, ...stylex.props(styles.input.srOnly)})}>
           {label}
         </label>
       )}
-      {startIcon && <span {...stylex.props(styles.input.startAdornment)}>{startIcon}</span>}
+      {startIcon && (
+        <span {...mergeSlot(startIconProps, {...stylex.props(styles.input.startAdornment)})}>
+          {startIcon}
+        </span>
+      )}
       <input
-        id={id}
         ref={ref}
-        type={type}
-        value={state}
-        placeholder={placeholder}
-        onChange={(event) => setState(event.target.value)}
-        {...inputProps}
-        {...stylex.props(styles.input.control, !!startIcon && styles.input.padStart, !!endIcon && styles.input.padEnd)}
+        {...mergeSlot(inputProps, {
+          id,
+          type,
+          value: state,
+          placeholder,
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) => setState(event.target.value),
+          className: inputSx.className,
+          style: inputSx.style,
+        })}
       />
-      {endIcon && <span {...stylex.props(styles.input.endAdornment)}>{endIcon}</span>}
+      {endIcon && (
+        <span {...mergeSlot(endIconProps, {...stylex.props(styles.input.endAdornment)})}>{endIcon}</span>
+      )}
     </div>
   );
 }

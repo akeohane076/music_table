@@ -1,8 +1,9 @@
-import type {ComponentPropsWithoutRef, ReactNode} from 'react';
+import type {AriaAttributes, ReactNode} from 'react';
 import * as stylex from '@stylexjs/stylex';
 import {Button} from '../Button/index.ts';
 import {SortArrowIcon} from '../Icon/index.ts';
 import {styles} from '../../theme/componentStyles.ts';
+import {mergeSlot, type Slot} from '../../lib/slotProps.ts';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -20,6 +21,10 @@ export interface Column<T> {
   /** CSS width applied via `<col>` (e.g. "26.4%"). */
   readonly width?: string;
   readonly align?: 'start' | 'end' | 'center';
+  /** Spread onto this column's `<th>`. */
+  readonly headerProps?: Slot<'th'>;
+  /** Spread onto this column's `<td>` for each row. */
+  readonly cellProps?: (row: T) => Slot<'td'>;
 }
 
 export interface TableProps<T> {
@@ -34,16 +39,21 @@ export interface TableProps<T> {
   readonly emptyState?: ReactNode;
   readonly minWidth?: string;
   readonly label?: string;
-  /** Spread onto the `<table>` element. */
-  readonly tableProps?: ComponentPropsWithoutRef<'table'>;
+  // Slot props for the table's structural elements (all guardrail-merged).
+  readonly tableProps?: Slot<'table'>;
+  readonly theadProps?: Slot<'thead'>;
+  readonly tbodyProps?: Slot<'tbody'>;
+  /** Per body-row props, e.g. an onClick or data attribute keyed off the row. */
+  readonly rowProps?: (row: T, index: number) => Slot<'tr'>;
 }
 
 const alignStyle = {end: styles.table.alignEnd, center: styles.table.alignCenter, start: null} as const;
 
 /**
  * Generic data table. Columns declare how to render and (optionally) sort each field, so
- * the component is decoupled from any particular row shape — the songs page passes
- * `Column<Track>[]`, but the same `Table` serves any `T`.
+ * the component is decoupled from any particular row shape. Every structural element — the
+ * table, head, body, rows, and each column's header/cell — exposes a guardrail-merged slot
+ * so consumers can attach handlers, data attributes, or styling without touching the markup.
  */
 export function Table<T>({
   columns,
@@ -55,21 +65,26 @@ export function Table<T>({
   minWidth = '640px',
   label,
   tableProps,
+  theadProps,
+  tbodyProps,
+  rowProps,
 }: TableProps<T>) {
+  const tableSx = stylex.props(styles.table.root);
   return (
     <div {...stylex.props(styles.table.scroller)}>
       <table
-        aria-label={label}
-        {...tableProps}
-        {...stylex.props(styles.table.root)}
-        style={{minWidth, ...tableProps?.style}}
+        {...mergeSlot(tableProps, {
+          'aria-label': label,
+          className: tableSx.className,
+          style: {...tableSx.style, minWidth},
+        })}
       >
         <colgroup>
           {columns.map((column) => (
             <col key={column.id} style={column.width ? {width: column.width} : undefined} />
           ))}
         </colgroup>
-        <thead>
+        <thead {...(theadProps ?? {})}>
           <tr>
             {columns.map((column) => {
               const isActive = sort?.columnId === column.id;
@@ -77,11 +92,15 @@ export function Table<T>({
               return (
                 <th
                   key={column.id}
-                  scope="col"
-                  aria-sort={
-                    isActive ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined
-                  }
-                  {...stylex.props(styles.table.headerCell, align)}
+                  {...mergeSlot(column.headerProps, {
+                    scope: 'col' as const,
+                    'aria-sort': (isActive
+                      ? sort.direction === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : undefined) as AriaAttributes['aria-sort'],
+                    ...stylex.props(styles.table.headerCell, align),
+                  })}
                 >
                   {column.sortable ? (
                     <Button
@@ -112,7 +131,7 @@ export function Table<T>({
             })}
           </tr>
         </thead>
-        <tbody>
+        <tbody {...(tbodyProps ?? {})}>
           {rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} {...stylex.props(styles.table.cell, styles.table.empty)}>
@@ -120,12 +139,14 @@ export function Table<T>({
               </td>
             </tr>
           ) : (
-            rows.map((row) => (
-              <tr key={getRowId(row)}>
+            rows.map((row, index) => (
+              <tr key={getRowId(row)} {...(rowProps?.(row, index) ?? {})}>
                 {columns.map((column) => (
                   <td
                     key={column.id}
-                    {...stylex.props(styles.table.cell, alignStyle[column.align ?? 'start'])}
+                    {...mergeSlot(column.cellProps?.(row), {
+                      ...stylex.props(styles.table.cell, alignStyle[column.align ?? 'start']),
+                    })}
                   >
                     {column.cell(row)}
                   </td>

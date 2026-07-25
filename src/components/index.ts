@@ -12,3 +12,7 @@ export * from './Popover/index.ts';
 export * from './Table/index.ts';
 export * from './Pagination/index.ts';
 export * from './filters/index.ts';
+
+// The guardrail merge, exported so consumers building their own components on these
+// primitives get the same slot-props policy.
+export {mergeSlot, type SlotProps} from '../lib/slotProps.ts';

@@ -4,6 +4,7 @@ import {Popover} from '@astryxdesign/core/Popover';
 import {Button} from '../Button/index.ts';
 import {ChevronIcon} from '../Icon/index.ts';
 import {styles} from '../../theme/componentStyles.ts';
+import type {Slot} from '../../lib/slotProps.ts';
 
 export interface FilterMenuRenderProps {
   readonly isOpen: boolean;
@@ -21,6 +22,8 @@ export interface FilterPopoverProps {
   /** Fired on the closed→open transition. Filters use it to seed draft state. */
   readonly onOpen?: () => void;
   readonly width?: number | string;
+  /** Spread onto the trigger pill, before Astryx's anchor/ARIA wiring (which wins). */
+  readonly triggerProps?: Omit<Slot<'button'>, 'ref'>;
   readonly children: (props: FilterMenuRenderProps) => ReactNode;
 }
 
@@ -36,6 +39,7 @@ export function FilterPopover({
   isActive,
   onOpen,
   width,
+  triggerProps,
   children,
 }: FilterPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,9 +60,8 @@ export function FilterPopover({
       xstyle={styles.popover.surface}
       content={children({isOpen, close: () => setIsOpen(false)})}
     >
-      {(triggerProps) => (
+      {(anchorProps) => (
         <Button
-          {...triggerProps}
           variant="pill"
           isActive={isActive || isOpen}
           endIcon={
@@ -67,6 +70,8 @@ export function FilterPopover({
               className={stylex.props(styles.popover.caret, isOpen && styles.popover.caretOpen).className}
             />
           }
+          {...triggerProps}
+          {...anchorProps}
         >
           {triggerLabel}
         </Button>

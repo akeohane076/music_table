@@ -1,5 +1,6 @@
 import {useMemo, useRef, useState} from 'react';
 import * as stylex from '@stylexjs/stylex';
+import type {Slot} from '../../../lib/slotProps.ts';
 import {FilterPopover} from '../../Popover/index.ts';
 import {SearchInput} from '../../SearchInput/index.ts';
 import {Button} from '../../Button/index.ts';
@@ -25,6 +26,8 @@ export interface MultiSelectFilterProps<T extends string = string> {
   readonly emptyMessage?: string;
   /** Override the trigger text. Defaults to `Artist (2)`. */
   readonly formatTriggerLabel?: (label: string, count: number) => string;
+  /** Spread onto the trigger pill. */
+  readonly triggerProps?: Omit<Slot<'button'>, 'ref'>;
 }
 
 function defaultTriggerLabel(label: string, count: number) {
@@ -52,6 +55,7 @@ export function MultiSelectFilter<T extends string = string>({
   selectedLabel = 'Selected',
   emptyMessage = 'No matches',
   formatTriggerLabel = defaultTriggerLabel,
+  triggerProps,
 }: MultiSelectFilterProps<T>) {
   const [committed, setCommitted] = useControllableState<readonly T[]>({value, defaultValue, onChange});
   const [draft, setDraft] = useState<readonly T[]>(committed);
@@ -92,6 +96,7 @@ export function MultiSelectFilter<T extends string = string>({
       label={`${label} filter`}
       triggerLabel={formatTriggerLabel(label, committed.length)}
       isActive={committed.length > 0}
+      triggerProps={triggerProps}
       // Seed the draft from the committed value each time the menu opens, so a discarded
       // edit never leaks into the next session. Seeding on the open transition (not an
       // effect keyed on value) means an external change to `value` while the menu is open

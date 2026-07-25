@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex';
 import {FilterPopover} from '../../Popover/index.ts';
 import {styles} from '../../../theme/componentStyles.ts';
 import {useControllableState} from '../../../hooks/useControllableState.ts';
+import type {Slot} from '../../../lib/slotProps.ts';
 import type {FilterOption} from '../types.ts';
 
 export interface SingleSelectFilterProps<T extends string = string> {
@@ -14,6 +15,8 @@ export interface SingleSelectFilterProps<T extends string = string> {
   readonly onChange?: (value: T | null) => void;
   /** Re-selecting the current option clears it. Set false to require a value. */
   readonly isClearable?: boolean;
+  /** Spread onto the trigger pill. */
+  readonly triggerProps?: Omit<Slot<'button'>, 'ref'>;
 }
 
 /**
@@ -29,6 +32,7 @@ export function SingleSelectFilter<T extends string = string>({
   defaultValue = null,
   onChange,
   isClearable = true,
+  triggerProps,
 }: SingleSelectFilterProps<T>) {
   const [selectedValue, setSelectedValue] = useControllableState<T | null>({
     value,
@@ -42,6 +46,7 @@ export function SingleSelectFilter<T extends string = string>({
       label={`${label} filter`}
       triggerLabel={selected ? `${label}: ${selected.label}` : label}
       isActive={selected !== null}
+      triggerProps={triggerProps}
     >
       {({close}) => (
         <div {...stylex.props(styles.popover.card, styles.singleSelect.panel)}>

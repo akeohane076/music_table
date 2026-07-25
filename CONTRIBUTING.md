@@ -45,20 +45,34 @@ the checklist a reviewer runs against a PR that adds or changes a component.
 - [ ] A Storybook story per state/variant.
 - [ ] A changeset (`npx changeset`) describing the change and its semver impact.
 
-## Prop spreading
+## Prop spreading — composition with guardrails
 
-Composability rests on three conventions, applied consistently:
+Every component exposes a **typed `<part>Props` slot for each meaningful internal element**,
+so consumers can reach into the markup (add a handler, a `data-*`, an `aria-describedby`,
+extra styling) without the component having to grow a bespoke prop for each case. But those
+slots are merged under a **guardrail policy**, so composition can't break correctness:
 
-- **Root spread + ref.** A primitive forwards `ref` and spreads `...rest` onto its root
-  element, so callers keep full access to native attributes, ARIA, and event handlers
-  (`<Button {...triggerProps} />` is how Astryx's Popover wires the trigger).
-- **Named slot-props** for a component's internal parts, spread *after* the defaults so they
-  override: `Pagination` takes `prevButtonProps` / `nextButtonProps`, `Input` takes
-  `inputProps`, `Table` takes `tableProps`. Add one per meaningfully-targetable inner element.
-- **`xstyle` escape hatch.** Every primitive accepts a StyleX `xstyle` merged last into
-  `stylex.props(...)`, for one-off overrides that don't warrant a new prop or token (e.g. the
-  table's sortable header neutralising the Button's geometry). Prefer a token; reach for
-  `xstyle` only for genuinely local adjustments.
+- The component's own props **win** — controlled values, `id`, required ARIA/roles, and the
+  compiled StyleX classes are protected.
+- `className` is **concatenated** (consumer + component); `style` is shallow-merged with the
+  component winning. A consumer extends styling, never erases it.
+- Everything the component doesn't set passes straight through.
+
+`mergeSlot(consumerProps, ownProps)` (`src/lib/slotProps.ts`, exported) encodes this for a
+component's own element. At composition sites, place the component's critical props *after*
+the consumer spread — e.g. `Pagination` spreads `nextButtonProps` then re-applies its
+navigation `onClick`/`disabled`, so an arrow can be relabelled but not un-wired.
+
+Every component covers its parts: `Button` (root + `labelProps`), `IconButton` (root),
+`Input` (`rootProps`/`labelProps`/`inputProps`/`startIconProps`/`endIconProps`), `SearchInput`
+(forwards those + `clearButtonProps`), `Pagination` (`rootProps`/`labelProps`/
+`prevButtonProps`/`nextButtonProps`), `Table` (`tableProps`/`theadProps`/`tbodyProps`/
+`rowProps` + per-`Column` `headerProps`/`cellProps`), and the filters (`triggerProps`).
+
+- **`ref`** is forwarded to each primitive's primary element.
+- **`xstyle`** is a StyleX escape hatch on every primitive, merged last into `stylex.props(...)`
+  for one-off overrides that don't warrant a new token (e.g. the table header neutralising the
+  Button's geometry). Prefer a token; reach for `xstyle` only for genuinely local adjustments.
 
 ## Style registry
 
