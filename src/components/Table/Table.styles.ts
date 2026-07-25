@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import {color, font, space, text} from '../../theme/tokens.stylex.ts';
+import {color, font, size, space, text} from '../../theme/tokens.stylex.ts';
 
 export const table = stylex.create({
   scroller: {
@@ -13,6 +13,7 @@ export const table = stylex.create({
   headerCell: {
     height: space.xxl,
     paddingInline: 0,
+    paddingInlineStart: size.tableTextInset,
     textAlign: 'start',
     verticalAlign: 'middle',
     fontSize: text.columnHeaderSize,
@@ -27,6 +28,7 @@ export const table = stylex.create({
   cell: {
     height: space.xxl,
     paddingInline: 0,
+    paddingInlineStart: size.tableTextInset,
     verticalAlign: 'middle',
     fontSize: text.cellSize,
     fontWeight: text.cellWeight,

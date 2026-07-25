@@ -10,19 +10,19 @@ export const input = stylex.create({
     width: '100%',
     backgroundColor: color.surface,
     borderRadius: radius.control,
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    // Transparent by default so gaining the focus outline never shifts layout.
-    borderColor: {
-      default: 'transparent',
-      ':hover': color.iconMuted,
-      ':focus-within': color.borderStrong,
+    // The stroke is an inset box-shadow, matching Figma's inside strokes: it takes no
+    // layout space, so the icon's 12px and the text's 40px insets measure from the true
+    // edge, and gaining the focused stroke never shifts layout.
+    boxShadow: {
+      default: 'none',
+      ':hover': `inset 0 0 0 1px ${color.iconMuted}`,
+      ':focus-within': `inset 0 0 0 1px ${color.borderStrong}`,
     },
   },
   // For use inside a container that already supplies the chrome (e.g. a popover header row).
   plain: {
     backgroundColor: 'transparent',
-    borderColor: {default: 'transparent', ':hover': 'transparent', ':focus-within': 'transparent'},
+    boxShadow: {default: 'none', ':hover': 'none', ':focus-within': 'none'},
     borderRadius: 0,
     height: '100%',
   },

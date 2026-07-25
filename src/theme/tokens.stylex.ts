@@ -117,6 +117,11 @@ export const size = stylex.defineVars({
   /** Single-select menu width in the design. A minimum, not a cap, so longer
    * option labels than the genre facet's still grow the menu rather than truncate. */
   menuMinWidth: '120px',
+  /** Table text sits 3px inside the row rules in the design (text at x43, rules at x40). */
+  tableTextInset: '3px',
+  /** Vertical breathing room around the pager: 10px above and below, measured from the
+   * design (chevrons sit 10px under the last rule and 10px above the card padding). */
+  paginationPadBlock: '10px',
   checkbox: '16px',
   icon: '20px',
   smallIcon: '16px',

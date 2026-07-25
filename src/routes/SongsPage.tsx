@@ -19,8 +19,10 @@ const GENRE_OPTIONS = toOptions(GENRES);
 // How each field is rendered and sorted. Passing this to the generic Table keeps the songs
 // concern (which columns, which are sortable) here, out of the reusable component.
 const TRACK_COLUMNS: Column<Track>[] = [
-  {id: 'title', header: 'Title', cell: (t) => t.title, sortable: true, width: '26.4%'},
-  {id: 'artist', header: 'Artist', cell: (t) => t.artist, sortable: true, width: '28.8%'},
+  // Column boundaries measured from the design's text starts: 316px and 344px of the
+  // 1200px content width (43→359→703 in the frame) = 26.333% / 28.667%.
+  {id: 'title', header: 'Title', cell: (t) => t.title, sortable: true, width: '26.333%'},
+  {id: 'artist', header: 'Artist', cell: (t) => t.artist, sortable: true, width: '28.667%'},
   {id: 'genre', header: 'Genre', cell: (t) => t.genre},
 ];
 

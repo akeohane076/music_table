@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import {color, font, space, text} from '../../theme/tokens.stylex.ts';
+import {color, font, size, space, text} from '../../theme/tokens.stylex.ts';
 
 export const pagination = stylex.create({
   root: {
@@ -7,7 +7,7 @@ export const pagination = stylex.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: space.sm,
-    paddingBlockStart: space.md,
+    paddingBlock: size.paginationPadBlock,
   },
   label: {
     fontFamily: font.family,

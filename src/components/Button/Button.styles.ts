@@ -12,9 +12,9 @@ export const button = stylex.create({
     justifyContent: 'center',
     gap: space.md,
     boxSizing: 'border-box',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'transparent',
+    // "Borders" are inset box-shadows, matching Figma's inside strokes: they never take
+    // layout space, so a 40px pill is 40px and padding insets measure from the true edge.
+    borderStyle: 'none',
     fontFamily: font.family,
     fontSize: text.controlLabelSize,
     lineHeight: text.controlLabelLine,
@@ -31,33 +31,32 @@ export const button = stylex.create({
   md: {height: size.controlHeight, paddingInline: space.lg, borderRadius: radius.control},
   lg: {height: '48px', paddingInline: space.xl, borderRadius: radius.control},
 
-  // Variants — surface + text + border color.
+  // Variants — surface + text + inside-stroke.
   solid: {
     backgroundColor: color.accent,
-    borderColor: color.accent,
     color: color.onAccent,
   },
   outline: {
     backgroundColor: {default: color.surface, ':hover': color.pageBg},
-    borderColor: color.accent,
+    boxShadow: `inset 0 0 0 1px ${color.accent}`,
     color: color.accent,
   },
   ghost: {
     backgroundColor: {default: 'transparent', ':hover': color.pageBg},
     color: color.textPrimary,
   },
-  // The filter trigger: fully rounded, its own 14/13 padding, hover-reveals a border.
+  // The filter trigger: fully rounded, its own 14/13 padding, hover-reveals a stroke.
   pill: {
     height: size.controlHeight,
     paddingInline: '14px 13px',
     borderRadius: radius.pill,
     backgroundColor: color.surface,
-    borderColor: {default: 'transparent', ':hover': color.iconMuted},
+    boxShadow: {default: 'none', ':hover': `inset 0 0 0 1px ${color.iconMuted}`},
     color: color.textPrimary,
   },
 
   // Drawn when a pill's filter is active/open — the design's dark outline.
   active: {
-    borderColor: color.borderStrong,
+    boxShadow: `inset 0 0 0 1px ${color.borderStrong}`,
   },
 });
