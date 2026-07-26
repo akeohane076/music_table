@@ -39,8 +39,5 @@ test('empty-result state has no violations', async ({page}) => {
   expect((await scan(page).analyze()).violations).toEqual([]);
 });
 
-test('kitchen-sink (all filter configurations) has no violations', async ({page}) => {
-  await page.goto('/kitchen-sink');
-  await expect(page.getByRole('heading', {level: 1})).toBeVisible();
-  expect((await scan(page).analyze()).violations).toEqual([]);
-});
+// Alternate filter configurations live in Storybook, where the a11y addon runs axe
+// live in every story; the states above cover the app's own surfaces.

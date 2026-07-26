@@ -5,7 +5,6 @@ import {Theme} from '@astryxdesign/core/theme';
 import {neutralTheme} from '@astryxdesign/theme-neutral/built';
 
 import {SongsPage} from './routes/SongsPage.tsx';
-import {KitchenSink} from './routes/KitchenSink.tsx';
 import {color, font, size, space} from './theme/tokens.stylex.ts';
 
 const styles = stylex.create({
@@ -24,20 +23,14 @@ const styles = stylex.create({
   },
 });
 
-// Two static routes don't warrant a routing library — and react-router carries a long
-// CVE history in the SSR/RSC paths this client-only SPA never touches. A pathname switch
-// is enough; vercel.json rewrites every path to index.html so deep links still resolve.
-function CurrentPage() {
-  const path = window.location.pathname.replace(/\/+$/, '');
-  return path === '/kitchen-sink' ? <KitchenSink /> : <SongsPage />;
-}
-
+// Single page, no routing library needed. Component configurations and variants live in
+// Storybook (served at /storybook on the deployed build).
 export function App() {
   return (
     <Theme theme={neutralTheme}>
       <div {...stylex.props(styles.page)}>
         <main {...stylex.props(styles.shell)}>
-          <CurrentPage />
+          <SongsPage />
         </main>
       </div>
     </Theme>

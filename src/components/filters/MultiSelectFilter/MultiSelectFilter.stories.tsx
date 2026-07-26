@@ -1,7 +1,14 @@
 import {useState} from 'react';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {MultiSelectFilter} from './MultiSelectFilter.tsx';
+import {Button} from '../../Button/index.ts';
 import {toOptions} from '../types.ts';
+import {TRACKS} from '../../../data/tracks.ts';
+
+const TRACK_COUNTS = new Map<string, number>();
+for (const track of TRACKS) {
+  TRACK_COUNTS.set(track.artist, (TRACK_COUNTS.get(track.artist) ?? 0) + 1);
+}
 
 const ARTISTS = toOptions(['ABBA', 'Billie Eilish', 'Jimi Hendrix', 'Kendrick Lamar', 'Led Zeppelin']);
 
@@ -56,4 +63,44 @@ export const Uncontrolled: Story = {
   render: () => (
     <MultiSelectFilter label="Artist" options={ARTISTS} defaultValue={['ABBA']} searchPlaceholder="Search Artists" />
   ),
+};
+
+/** The trigger is composed, not configured: any button can be passed as a child. */
+export const CustomTrigger: Story = {
+  render: () => {
+    const [value, setValue] = useState<readonly string[]>([]);
+    return (
+      <MultiSelectFilter label="Artist" options={ARTISTS} value={value} onChange={setValue}>
+        {({count}) => <Button variant="outline" size="sm">Artists{count ? ` · ${count}` : ''}</Button>}
+      </MultiSelectFilter>
+    );
+  },
+};
+
+/**
+ * renderOptionLabel adds content to each row (the checkbox machinery is untouched),
+ * filterOption swaps matching to prefix-only, and searchProps reaches the inner search.
+ */
+export const CustomOptionRendering: Story = {
+  render: () => {
+    const [value, setValue] = useState<readonly string[]>(['Led Zeppelin']);
+    return (
+      <MultiSelectFilter
+        label="Artist"
+        options={ARTISTS}
+        value={value}
+        onChange={setValue}
+        searchProps={{placeholder: 'Type a first letter…'}}
+        filterOption={(option, q) => option.label.toLowerCase().startsWith(q)}
+        renderOptionLabel={(option, {checked}) => (
+          <>
+            {option.label}
+            <span style={{color: checked ? '#006088' : '#757575', marginInlineStart: 6, fontSize: 12}}>
+              · {TRACK_COUNTS.get(option.value) ?? 0} tracks
+            </span>
+          </>
+        )}
+      />
+    );
+  },
 };

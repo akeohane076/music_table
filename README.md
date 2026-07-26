@@ -26,9 +26,9 @@ nvm use && npm install && npm run dev   # → http://localhost:5173
 | `npm run storybook` | every component and state, with live axe checks |
 | `npm run tokens` | re-extract design tokens from Figma (needs `FIGMA_TOKEN` in `.env.local`) |
 
-**Routes:** `/` — the Figma page · `/kitchen-sink` — the same components under many
-configurations (custom triggers, custom option rendering, uncontrolled mode). Deployed,
-Storybook lives at `/storybook`.
+The app is the Figma page at `/`. Component variants and alternate configurations (custom
+triggers, custom option rendering, uncontrolled mode) live in Storybook — `/storybook/` on
+the deployed site.
 
 ## The components in 20 seconds
 
@@ -59,7 +59,7 @@ Two layers, split by what each environment can actually verify:
 | Layer | Runs | Covers |
 | --- | --- | --- |
 | **Vitest** (jsdom) | `npm test` | Pure filter/sort/pagination logic (incl. the design's own `ab` → ABBA search example) · the multi-select's full **draft → Apply → discard** cycle · uncontrolled mode · Checkbox/RemovableTag/ButtonBar/Popover behaviour · **the guardrails themselves** — tests attempt to hijack `Pagination`'s `onClick`, `RemovableTag`'s remove, and the filter's inner search via slot props, and assert the component wins |
-| **Playwright** (real Chromium) | `npm run test:e2e` | Real-browser filter flows including the popover **reopen** cycle jsdom can't do · **axe accessibility scans per UI state** (open menus, empty results, kitchen-sink) · **visual-regression baselines** that turn "pixel-perfect" into a failing test |
+| **Playwright** (real Chromium) | `npm run test:e2e` | Real-browser filter flows including the popover **reopen** cycle jsdom can't do · **axe accessibility scans per UI state** (open menus, empty results) · **visual-regression baselines** that turn "pixel-perfect" into a failing test |
 
 CI runs typecheck → unit → build → e2e → axe on every push to `main` and every PR
 (`.github/workflows/ci.yml`), and fails PRs that change shipped code without a changeset.

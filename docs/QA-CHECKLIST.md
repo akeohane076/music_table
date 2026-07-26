@@ -99,8 +99,8 @@ Legend: ☐ to check · 🔑 keyboard-only path · ♿ screen-reader path
 ## 8. Cross-browser & routes
 
 - ☐ Verify in Chrome, Safari, and Firefox (StyleX `light-dark()` handling differs; the build targets these).
-- ☐ `/kitchen-sink` renders all filter configurations; each is independently interactive.
-- ☐ Hard-refresh on `/kitchen-sink` → still loads (SPA rewrite in `vercel.json`).
+- ☐ `/storybook/` on the deployed site loads and stories render styled; the alternate filter
+  configurations (custom trigger, custom option rendering, uncontrolled) are interactive there.
 - ☐ `npm run build && npm run preview` → the production build behaves the same as dev.
 
 ## 9. Fidelity spot-checks (against Figma)
