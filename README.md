@@ -52,6 +52,30 @@ The multi-select edits a **draft** committed only on Apply — dismissing discar
 stays undoable. The single-select applies on click (nothing to batch). That asymmetry is in
 the design, on purpose.
 
+## Testing
+
+Two layers, split by what each environment can actually verify:
+
+| Layer | Runs | Covers |
+| --- | --- | --- |
+| **Vitest** (jsdom) | `npm test` | Pure filter/sort/pagination logic (incl. the design's own `ab` → ABBA search example) · the multi-select's full **draft → Apply → discard** cycle · uncontrolled mode · Checkbox/RemovableTag/ButtonBar/Popover behaviour · **the guardrails themselves** — tests attempt to hijack `Pagination`'s `onClick`, `RemovableTag`'s remove, and the filter's inner search via slot props, and assert the component wins |
+| **Playwright** (real Chromium) | `npm run test:e2e` | Real-browser filter flows including the popover **reopen** cycle jsdom can't do · **axe accessibility scans per UI state** (open menus, empty results, kitchen-sink) · **visual-regression baselines** that turn "pixel-perfect" into a failing test |
+
+CI runs typecheck → unit → build → e2e → axe on every push to `main` and every PR
+(`.github/workflows/ci.yml`), and fails PRs that change shipped code without a changeset.
+Visual baselines are macOS-captured, so they're asserted locally rather than on the Linux
+runner (noted in the workflow). Update deliberately with `npm run test:visual:update`.
+
+## Storybook
+
+`npm run storybook` → http://localhost:6006 — every component at every state: primitive
+variants (Button's solid/outline/ghost/pill, Icon's size ramp), the compound Popover, both
+filters (including reconfigured and uncontrolled stories), and interactive Checkbox /
+RemovableTag / ButtonBar demos. The **a11y addon runs axe live in every story**, set to
+`error` so a violation is loud. Stories double as the component docs — autodocs are generated
+from the TSDoc on each prop. On the deployed site it's served at **`/storybook`** from the
+same build (`vercel.json` emits it to `dist/storybook`).
+
 ## Notes for reviewers
 
 - **Design tokens are measured, not eyeballed** — `scripts/extract-figma-tokens.mjs` reads the
