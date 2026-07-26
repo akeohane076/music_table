@@ -110,6 +110,14 @@ export function Popover({
         label={label}
         width={width}
         xstyle={styles.popover.surface}
+        // Astryx wraps content in a dark elevated surface and pads it; the high-level
+        // Popover exposes neither hasSurface nor an xstyle route to that wrapper — xstyle
+        // lands on an inner padding div, and its dynamic StyleX merge is dropped by the
+        // production compile (v0.1.8), which is exactly how the dark frame shipped: the
+        // returning padding let the surface show around the menu card. Zeroing the padding
+        // inline is compile-proof — the card then covers the surface in every build.
+        // Guarded by e2e/prod-smoke.spec.ts against the built bundle.
+        style={{padding: 0}}
         content={content}
       >
         {(anchorProps) =>

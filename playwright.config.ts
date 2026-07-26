@@ -8,6 +8,8 @@ import {defineConfig, devices} from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // Prod-bundle smoke tests run under playwright.prod.config.ts against `vite preview`.
+  testIgnore: 'prod-smoke.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

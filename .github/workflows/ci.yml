@@ -36,6 +36,11 @@ jobs:
       - name: E2e & a11y
         run: npx playwright test filters a11y
 
+      # Against the built bundle (vite preview) — dev and prod compile pipelines differ
+      # (Astryx's production compile once dropped a StyleX merge dev preserved).
+      - name: Prod-bundle smoke
+        run: npx playwright test --config playwright.prod.config.ts
+
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@v4

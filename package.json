@@ -17,7 +17,8 @@
     "version": "changeset version",
     "release": "npm run build && changeset publish",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test:e2e:prod": "playwright test --config playwright.prod.config.ts"
   },
   "dependencies": {
     "@astryxdesign/core": "^0.1.8",

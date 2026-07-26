@@ -83,8 +83,11 @@ same build (`vercel.json` emits it to `dist/storybook`).
   gate any drift.
 - **Deliberate deviation:** 40 tracks instead of the mock's 10, so pagination actually works —
   first paint reads "1 of 4" (one-line revert in `src/data/tracks.ts`).
-- **Astryx (v0.1.x) notes:** its Popover ships a dark surface we reset to a positioning shell;
-  `astryx.css` must *not* be imported on the Vite path (the build plugin compiles from source);
+- **Astryx (v0.1.x) notes:** its Popover wraps content in a dark padded surface with no
+  opt-out on the high-level component, and its production compile drops the dynamic StyleX
+  merge dev preserves — so the padding is zeroed via inline style (compile-proof) and a
+  **prod-bundle smoke suite** (`npm run test:e2e:prod`) guards it in CI. Also: `astryx.css`
+  must *not* be imported on the Vite path (the build plugin compiles from source);
   Storybook needs StyleX runtime injection (`.storybook/main.ts`). Requires Vite 8.
 - **jsdom caveat:** Astryx's popover can't *reopen* under jsdom (CSS anchor positioning), so
   reopen flows are covered in Playwright, not Vitest — documented at the affected tests.
